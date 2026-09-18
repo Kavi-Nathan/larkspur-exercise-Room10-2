@@ -18,7 +18,7 @@ Two halves, one self-contained HTML file, readout.html at the repo root:
 
   ARCHITECTURE: read live from your agent.py: every tool and its description
   length, which tools are yours and which are served over MCP, the loop
-  ceiling, the prompt sizes. This is the "what we built" half of your pod's
+  ceiling, the prompt sizes. This is the "what we built" half of your team's
   submission.
 
   ALL FIVE SHAPES: the totals from your last `run.py --all`, if you have run
@@ -32,7 +32,7 @@ Two halves, one self-contained HTML file, readout.html at the repo root:
   and the page says which ticket that was so nobody reads it as the whole set.
 
 Pushing readout.html is the submission. There is nothing to upload. It is also
-the fastest way to explain your agent to another pod: one page, no code tour.
+the fastest way to explain your agent to another team: one page, no code tour.
 
 It writes readout-trace.json beside it (the trace summary alone) and carries a
 copy of the same numbers (plus whichever gates this laptop has banked) inside
@@ -60,11 +60,11 @@ DEFAULT_TRACE = os.path.join(HERE, ".workshop", "last_trace.json")
 # Written by `python3 run.py --all`: every Stage 1 shape, plus the totals. The
 # single trace below it is one conversation; this is the run that generalizes.
 LAST_RUN_PATH = os.path.join(HERE, ".workshop", "last_run.json")
-# The readout is the pod's submission: it lives at the repo ROOT (committed and
+# The readout is the team's submission: it lives at the repo ROOT (committed and
 # pushed, unlike .workshop/, which is gitignored). Pushing it IS submitting it.
 OUT_PATH = os.path.join(HERE, "readout.html")
 # The client half. Same data, different register, same directory, so the two
-# pages travel together when the pod pushes.
+# pages travel together when the team pushes.
 OUT_CLIENT_PATH = os.path.join(HERE, "readout-client.html")
 PROFILE_PATH = os.path.join(HERE, ".workshop", "profile.json")
 PITCH_PATH = os.path.join(HERE, "PITCH.md")
@@ -123,7 +123,7 @@ CLAIMS_SHORT = {
 GATE_ORDER = ["1.2", "1.3", "1.4", "2.1", "2.2", "3.1", "4.1"]
 
 # What no gate in this build measures, whatever your numbers say. The first
-# four are true of every pod on every run; the conditional ones are added by
+# four are true of every team on every run; the conditional ones are added by
 # not_measured() when the evidence for them is missing.
 NOT_MEASURED_ALWAYS = [
     "Accuracy at volume. Nothing here has been graded against a statistically "
@@ -257,11 +257,16 @@ def read_trace(path: str) -> dict:
 
 
 def read_pod() -> str:
+    """The team name off the first line of TEAM.md.
+
+    `# Team: <name>` is what ships now. The older `# Pod:` heading still reads,
+    so a repo made from the old template keeps working."""
     team = os.path.join(HERE, "TEAM.md")
     if os.path.exists(team):
         with open(team) as f:
             for line in f:
-                if line.strip().lower().startswith("# pod"):
+                head = line.strip().lower()
+                if head.startswith("# team") or head.startswith("# pod"):
                     return line.split(":", 1)[-1].strip()
     return ""
 
@@ -325,7 +330,7 @@ def read_account() -> dict:
     """The three lines of ACCOUNT.md, or {} if nobody filled them in.
 
     An unfilled field is left out rather than rendered empty: a client page
-    with a blank Account row on it says the pod did not do the one thing only
+    with a blank Account row on it says the team did not do the one thing only
     they could do, in front of the person it was for.
     """
     out = {}
@@ -372,7 +377,7 @@ def not_measured(evals: dict, bench: dict, banked: dict) -> list:
     """The always-true list, plus whatever this laptop has no evidence for.
 
     Absence is the finding. A page that quietly omits "we never ran the eval
-    suite" is the page that gets a pod caught in the room.
+    suite" is the page that gets a team caught in the room.
     """
     items = list(NOT_MEASURED_ALWAYS)
     if not evals:
@@ -395,7 +400,7 @@ def _from_sweep(trace: dict, last_run: dict):
     run.py writes .workshop/last_trace.json on every run, and under --all the
     LAST shape is the one that survives. So the trace sitting next to a sweep is
     usually one arbitrary ticket out of five, and saying "last run" about it
-    invites a pod to read it as their build. This says which ticket it is, and
+    invites a team to read it as their build. This says which ticket it is, and
     only when the numbers line up with that row.
     """
     rows = (last_run or {}).get("shapes") or []
@@ -510,7 +515,7 @@ def render(arch: dict, trace: dict, pod: str, trace_path: str, evidence: dict,
     out.append("<title>Agent readout%s</title>" % (": " + esc(pod) if pod else ""))
     out.append("<style>%s</style><div class='page'>" % CSS)
     out.append("<h1>Agent <em>readout.</em></h1>")
-    sub = "Pod %s · " % esc(pod) if pod else ""
+    sub = "Team %s · " % esc(pod) if pod else ""
     out.append("<p class='sub'>%s%s</p>" % (sub, time.strftime("%Y-%m-%d %H:%M")))
 
     # -- architecture --------------------------------------------------------
@@ -629,7 +634,7 @@ def render(arch: dict, trace: dict, pod: str, trace_path: str, evidence: dict,
                "training scenario · Confidential / do not distribute</p></div>")
 
     # The machine-readable half, travelling INSIDE the page. .workshop/ is
-    # gitignored, so a facilitator who clones the pod repo has no profile.json
+    # gitignored, so a facilitator who clones the team repo has no profile.json
     # and no last_trace.json: this block, and readout-trace.json beside it, are
     # the only evidence that survives a push.
     payload = json.dumps({
@@ -696,7 +701,7 @@ ul.plain li { margin-bottom: 7px; }
 def client_lede(arch: dict, pitch: dict) -> str:
     """One paragraph, in the client's words, about what this agent does.
 
-    The first sentence is the pod's own `Does:` line if they wrote one, because
+    The first sentence is the team's own `Does:` line if they wrote one, because
     nothing this script can generate beats the sentence they will actually say
     out loud. The rest is counted from agent.py, so the paragraph cannot claim a
     capability the file does not offer.
@@ -732,7 +737,7 @@ def render_client(arch: dict, pod: str, evidence: dict, pitch: dict, account: di
                % (": " + esc(pod) if pod else ""))
     out.append("<style>%s</style><div class='page'>" % CLIENT_CSS)
     out.append("<h1>The disruption agent, <em>in plain terms.</em></h1>")
-    who = "Pod %s · " % esc(pod) if pod else ""
+    who = "Team %s · " % esc(pod) if pod else ""
     if evidence.get("name"):
         who += "%s · " % esc(evidence["name"])
     out.append("<p class='sub'>%s%s</p>" % (who, time.strftime("%Y-%m-%d %H:%M")))
@@ -849,8 +854,8 @@ def render_client(arch: dict, pod: str, evidence: dict, pitch: dict, account: di
 
 def main_client(args) -> int:
     """The client page. It needs no trace: it is a claim page, not a run page,
-    so it renders off the architecture, the banked gates and the pod's own
-    words. That is deliberate. A pod that has banked nothing gets a page that
+    so it renders off the architecture, the banked gates and the team's own
+    words. That is deliberate. A team that has banked nothing gets a page that
     says so, which is the most useful version of this page they could hold."""
     out_path = args.out or OUT_CLIENT_PATH
     arch = read_architecture()

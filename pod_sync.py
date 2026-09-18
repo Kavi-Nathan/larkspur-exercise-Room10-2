@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """pod_sync.py: one repo, several people, no merge conflicts.
 
-    python3 pod_sync.py --status         # where the pod is, and where you are
+    python3 pod_sync.py --status         # where the team is, and where you are
     python3 pod_sync.py --push-canon     # you built it: publish it as the canon
     python3 pod_sync.py --take-canon     # everyone else: pick the canon up
 
@@ -13,7 +13,7 @@ That is the whole reason this file exists. Several people editing one agent.py
 in one repo at the same time produces a merge conflict inside a function they
 are all still learning to read, and no build has time for that. So during
 the build everyone builds their own agent.py locally, and the repo only ever
-holds one version: the one the pod chose.
+holds one version: the one the team chose.
 
 Nothing here throws your work away. --take-canon saves your own agent.py into
 .workshop/mine/ before it touches anything, and prints where it went.
@@ -85,9 +85,9 @@ def last_line(text):
 # ---------------------------------------------------------------------------
 # the roster
 # ---------------------------------------------------------------------------
-# TEAM.md is the roster: the pod's name and one typed name per person. The
+# TEAM.md is the roster: the team's name and one typed name per person. The
 # overnight review reads the names off it, and --status prints it as one
-# paste-able line. Nothing derives a job from its order. The pod decides in the
+# paste-able line. Nothing derives a job from its order. The team decides in the
 # moment who does what, and the one rule that holds is the canon rule: one
 # person pushes at the end of the build, agreed before the clock runs out.
 
@@ -128,15 +128,15 @@ def preflight():
     """The two conditions every verb needs. Returns an error message or None."""
     code, out = git("rev-parse", "--is-inside-work-tree", timeout=15)
     if code != 0 or out.split()[-1:] != ["true"]:
-        return ("This folder is not a git repo, so there is no pod to sync with.",
-                "Clone the pod repo (do not download the zip):",
-                "  git clone <your pod repo URL>")
+        return ("This folder is not a git repo, so there is no team to sync with.",
+                "Clone the team repo (do not download the zip):",
+                "  git clone <your team repo URL>")
     code, _ = git("remote", "get-url", "origin", timeout=15)
     if code != 0:
         return ("This clone has no 'origin' remote, so there is nowhere to push or pull.",
-                "If you made this folder with `git init`, clone the pod repo instead.",
-                "Or point it at the pod repo:",
-                "  git remote add origin <your pod repo URL>")
+                "If you made this folder with `git init`, clone the team repo instead.",
+                "Or point it at the team repo:",
+                "  git remote add origin <your team repo URL>")
     return None
 
 
@@ -202,14 +202,26 @@ def banked_steps(profile):
 
 
 def canon_commits(ref):
-    """Every canon push that has reached the remote, newest first."""
-    out = git_out("log", ref, "--format=%an%x1f%ar%x1f%s", "--grep=^canon:", "-n", "40")
+    """Every canon push that has reached the remote, newest first, with the
+    committer's note (the commit body) so a teammate who missed the build can
+    read what changed and why."""
+    out = git_out("log", ref, "--format=%an%x1f%ar%x1f%s%x1f%b%x1e",
+                  "--grep=^canon:", "-n", "40")
     rows = []
-    for line in out.splitlines():
-        parts = line.split("\x1f")
-        if len(parts) == 3:
-            rows.append({"author": parts[0], "when": parts[1], "subject": parts[2]})
+    for rec in out.split("\x1e"):
+        parts = rec.strip("\n").split("\x1f")
+        if len(parts) >= 3:
+            rows.append({"author": parts[0].strip(), "when": parts[1].strip(),
+                         "subject": parts[2].strip(),
+                         "body": (parts[3].strip() if len(parts) > 3 else "")})
     return rows
+
+
+def print_note(body, indent="            "):
+    """The committer's note under a canon line, or nothing."""
+    for line in (body or "").splitlines():
+        if line.strip():
+            print(indent + line.rstrip())
 
 
 def gate_of(subject):
@@ -228,7 +240,7 @@ def bench_warning():
     after = os.path.exists(os.path.join(HERE, ".workshop", "bench-after.json"))
     if before and not after:
         return ["You have a bench-before and no bench-after. The gate compares the two,",
-                "so right now the pod has a baseline and no result. After the lever is",
+                "so right now the team has a baseline and no result. After the lever is",
                 "pulled, run:  python3 bench.py --label after"]
     return None
 
@@ -238,7 +250,7 @@ def bench_warning():
 # ---------------------------------------------------------------------------
 
 def cmd_status(args):
-    print("\n%s\nLARKSPUR POD SYNC  ·  status\n%s" % (RULE, RULE))
+    print("\n%s\nLARKSPUR TEAM SYNC  ·  status\n%s" % (RULE, RULE))
     ok, out = fetch()
     if not ok:
         print("  remote    could not reach origin")
@@ -251,13 +263,13 @@ def cmd_status(args):
     print("  repo      %s" % origin)
     print("  branch    %s, tracking %s" % (branch_name(), ref))
     if behind and ahead:
-        state = "%d behind and %d ahead of the pod" % (behind, ahead)
+        state = "%d behind and %d ahead of the team" % (behind, ahead)
     elif behind:
-        state = "%d commit(s) behind the pod" % behind
+        state = "%d commit(s) behind the team" % behind
     elif ahead:
-        state = "%d commit(s) here that the pod does not have" % ahead
+        state = "%d commit(s) here that the team does not have" % ahead
     else:
-        state = "level with the pod"
+        state = "level with the team"
     print("  you       %s" % state)
 
     canon = canon_commits(ref)
@@ -267,6 +279,7 @@ def cmd_status(args):
         print("  canon     %s, pushed by %s %s"
               % ("step %s (%s)" % (gate, GATE_NAMES.get(gate, "?")) if gate else top["subject"],
                  top["author"], top["when"]))
+        print_note(top.get("body"))
     else:
         print("  canon     nothing published yet (no --push-canon has landed)")
 
@@ -279,7 +292,7 @@ def cmd_status(args):
         print("  banked    nothing banked on this laptop yet (python3 verify.py <step>)")
 
     names = sorted(set(c["author"] for c in canon))
-    print("  pod       %d canon push(es) by %d name(s)" % (len(canon), len(names)))
+    print("  team      %d canon push(es) by %d name(s)" % (len(canon), len(names)))
     if names:
         print("            pushed by: %s" % ", ".join(names))
 
@@ -290,7 +303,7 @@ def cmd_status(args):
         print("\n  roster: %s" % ", ".join(people))
     else:
         print("\n  roster    TEAM.md has no names yet. Whoever created the repo types one")
-        print("            line per person under the pod name and commits it once.")
+        print("            line per person under the team name and commits it once.")
 
     warn = bench_warning()
     if warn:
@@ -302,7 +315,7 @@ def cmd_status(args):
     if behind:
         print("You are behind. If the build is over:  python3 pod_sync.py --take-canon")
     elif ahead:
-        print("You have local commits the pod does not. If you are the build's committer:")
+        print("You have local commits the team does not. If you are the build's committer:")
         print("  python3 pod_sync.py --push-canon")
     else:
         print("Nothing to sync. Build.")
@@ -323,7 +336,7 @@ def resolve_gate(args, profile, ref, prefer="remote"):
 
       --push-canon  is publishing what passed HERE, so the highest step banked
                     on this laptop is the right guess (prefer="local").
-      --take-canon  is picking up what the pod published, so the newest canon
+      --take-canon  is picking up what the team published, so the newest canon
                     on the remote is (prefer="remote").
     """
     if args.gate:
@@ -378,8 +391,59 @@ def regenerate_readout():
     return False, last_line((r.stdout + r.stderr).strip())
 
 
+def canon_note(gate, banked, args):
+    """The commit body under a canon push: the step, what is green here, the
+    size of the change against the previous canon, and one line from the
+    committer on why. Asked for at the prompt when --note was not given and
+    someone is at the keyboard; skipped quietly otherwise."""
+    lines = ["Step %s (%s) banked. Green on this laptop: %s."
+             % (gate, GATE_NAMES.get(gate, "?"), ", ".join(banked) or gate)]
+    stat = git_out("diff", "--cached", "--numstat")
+    changed = []
+    for row in stat.splitlines():
+        parts = row.split("\t")
+        if len(parts) == 3 and parts[2] in CANON_FILES and parts[0] != "-":
+            changed.append("%s +%s -%s" % (parts[2], parts[0], parts[1]))
+    if changed:
+        lines.append("Changed since the last canon: %s." % ", ".join(changed))
+    note = (getattr(args, "note", None) or "").strip()
+    if not note and sys.stdin.isatty():
+        try:
+            print("\n  One line for the team on what changed and why "
+                  "(Enter to skip; --note \"...\" next time to skip the prompt):")
+            note = input("  > ").strip()
+        except (EOFError, KeyboardInterrupt):
+            note = ""
+    if note:
+        lines.append("Why: %s" % note)
+    lines.append("Behind? python3 pod_sync.py --take-canon, then in claude: /catchup")
+    return "\n".join(lines)
+
+
+def cmd_history(args):
+    print("\n%s\nLARKSPUR TEAM SYNC  ·  history\n%s" % (RULE, RULE))
+    fetch()
+    ref = upstream_ref()
+    canon = canon_commits(ref)
+    if not canon:
+        print("  No canon has been pushed yet. The first --push-canon starts the history.")
+        print(RULE)
+        return 0
+    print("  Every canon push, newest first, with the committer's note.\n")
+    for row in canon:
+        gate = gate_of(row["subject"])
+        print("  %s  pushed by %s, %s" % (gate_label(gate) if gate else row["subject"],
+                                          row["author"], row["when"]))
+        print_note(row.get("body"), indent="      ")
+        print("")
+    print(RULE)
+    print("To pick up the newest one:  python3 pod_sync.py --take-canon")
+    print(RULE)
+    return 0
+
+
 def cmd_push_canon(args):
-    print("\n%s\nLARKSPUR POD SYNC  ·  push canon\n%s" % (RULE, RULE))
+    print("\n%s\nLARKSPUR TEAM SYNC  ·  push canon\n%s" % (RULE, RULE))
     fetch()
     ref = upstream_ref()
     profile = load_profile()
@@ -430,13 +494,17 @@ def cmd_push_canon(args):
 
     code, _ = git("diff", "--cached", "--quiet")
     if code == 0:
-        print("\n  Nothing changed: what you have is already the pod's canon.")
+        print("\n  Nothing changed: what you have is already the team's canon.")
         print(RULE)
         return 0
 
     author = git_out("config", "user.name") or "unknown"
+    # The subject line is what gate_of() and the status board read; keep it.
+    # The body is for the teammate who was not here: what changed, and why, in
+    # the committer's own words. /catchup reads it back through --history.
     message = "canon: gate %s by %s" % (gate, author)
-    code, out = git("commit", "-m", message, timeout=60)
+    body = canon_note(gate, banked, args)
+    code, out = git("commit", "-m", message, "-m", body, timeout=60)
     if code != 0:
         return fail("git could not make the commit.", last_line(out),
                     "Usually this is an unset identity. Set it, then re-run:",
@@ -445,8 +513,8 @@ def cmd_push_canon(args):
 
     ok, detail, kind = push_with_retry(ref)
     if not ok and kind == "conflict":
-        return fail("Your canon is committed here but did not reach the pod repo: %s." % detail,
-                    "Two canons for one block cannot both be the canon, so the pod picks one.",
+        return fail("Your canon is committed here but did not reach the team repo: %s." % detail,
+                    "Two canons for one block cannot both be the canon, so the team picks one.",
                     "  1. Agree out loud which version it is. Ten seconds, not a debate.",
                     "  2. If it is theirs:  python3 pod_sync.py --take-canon",
                     "     (your version is saved to .workshop/mine/ before anything moves)",
@@ -454,19 +522,19 @@ def cmd_push_canon(args):
                     "     top of it, re-run the gate, and push again.",
                     "Nothing is lost either way. Both versions still exist on two laptops.")
     if not ok:
-        return fail("Your canon is committed here but did not reach the pod repo: %s." % detail,
+        return fail("Your canon is committed here but did not reach the team repo: %s." % detail,
                     "Do this, in order:",
-                    "  1. python3 pod_sync.py --status      (see where the pod is)",
+                    "  1. python3 pod_sync.py --status      (see where the team is)",
                     "  2. git pull --rebase --autostash     (bring their commits under yours)",
                     "  3. python3 pod_sync.py --push-canon  (same command again)",
                     "Still stuck after two tries? Raise a hand. Nothing is lost: your",
-                    "commit is here and the pod can pull it from your screen if it has to.")
+                    "commit is here and the team can pull it from your screen if it has to.")
 
-    print("\n  Published as the pod's canon: %s" % gate_label(gate))
+    print("\n  Published as the team's canon: %s" % gate_label(gate))
     for path in present:
         print("    %s" % path)
     print("\n" + RULE)
-    print("Tell the pod. Everyone else now runs:")
+    print("Tell the team. Everyone else now runs:")
     print("  python3 pod_sync.py --take-canon")
     print(RULE)
     return 0
@@ -555,10 +623,10 @@ def restore_deleted():
 
 
 def cmd_take_canon(args):
-    print("\n%s\nLARKSPUR POD SYNC  ·  take canon\n%s" % (RULE, RULE))
+    print("\n%s\nLARKSPUR TEAM SYNC  ·  take canon\n%s" % (RULE, RULE))
     ok, out = fetch()
     if not ok:
-        return fail("Could not reach the pod repo, so there is no canon to take.",
+        return fail("Could not reach the team repo, so there is no canon to take.",
                     last_line(out),
                     "Check wifi first, then:",
                     "  python3 pod_sync.py --status",
@@ -574,7 +642,7 @@ def cmd_take_canon(args):
     else:
         print("  no agent.py here to save (nothing of yours can be lost)")
 
-    # Advisory, never a refusal. A pod at the end of a block needs everyone on
+    # Advisory, never a refusal. A team at the end of a block needs everyone on
     # the canon more than it needs one person's gate, and refusing here strands
     # whoever ran out of time on a file the next block does not start from.
     if gate is not None and gate not in banked and not args.force:
@@ -588,7 +656,7 @@ def cmd_take_canon(args):
 
     # Before anything moves: untracked files the canon tracks. Otherwise the
     # pull below refuses over readout.html and the only advice left is a
-    # re-clone, which costs the pod ten minutes it does not have.
+    # re-clone, which costs the team ten minutes it does not have.
     clear_collisions(ref)
 
     ahead, behind = ahead_behind(ref)
@@ -596,13 +664,13 @@ def cmd_take_canon(args):
         unwound = git_out("log", "--format=  %h %s", "%s..HEAD" % ref)
         code, out = git("reset", "--mixed", ref, timeout=60)
         if code != 0:
-            return fail("Could not move your branch onto the pod's canon.", last_line(out),
+            return fail("Could not move your branch onto the team's canon.", last_line(out),
                         "Your agent.py is saved at %s, so nothing of yours is at risk."
                         % (os.path.relpath(saved, HERE) if saved else "(none)"),
                         "Show this line in the room and keep building on your own copy.")
         restore_deleted()
         git("checkout", "--", "agent.py")
-        print("  you had local commit(s) the pod does not have. They are unwound onto the")
+        print("  you had local commit(s) the team does not have. They are unwound onto the")
         print("  canon, and every file they changed is still here as an uncommitted change:")
         for line in unwound.splitlines():
             print("  %s" % line)
@@ -622,27 +690,30 @@ def cmd_take_canon(args):
                     if code != 0:
                         git("rebase", "--abort")
             if code != 0:
-                return fail("Could not fast-forward onto the pod's canon.", last_line(out),
+                return fail("Could not fast-forward onto the team's canon.", last_line(out),
                             "Your agent.py is saved at %s."
                             % (os.path.relpath(saved, HERE) if saved else "(none)"),
                             "Simplest fix, and it costs a minute:",
                             "  1. copy .workshop/ somewhere safe (your banked codes live there)",
-                            "  2. re-clone the pod repo into a new folder",
+                            "  2. re-clone the team repo into a new folder",
                             "  3. copy .workshop/ back in")
 
     code, _ = git("diff", "--quiet", ref, "--", "agent.py")
     if code != 0:
-        return fail("agent.py here still does not match the pod's canon.",
+        return fail("agent.py here still does not match the team's canon.",
                     "Your version is saved at %s."
                     % (os.path.relpath(saved, HERE) if saved else "(none)"),
                     "Run this to take it by hand, then say in the room that it happened:",
                     "  git checkout %s -- agent.py" % ref)
 
     canon = canon_commits(ref)
-    print("\n  agent.py is now the pod's canon", end="")
+    print("\n  agent.py is now the team's canon", end="")
     if canon:
         top = canon[0]
         print(" (%s, pushed by %s %s)" % (top["subject"], top["author"], top["when"]))
+        if top.get("body"):
+            print("  What changed, in the committer's words:")
+            print_note(top["body"], indent="    ")
     else:
         print("")
     if saved:
@@ -650,7 +721,7 @@ def cmd_take_canon(args):
               % os.path.relpath(saved, HERE))
         print("    diff %s agent.py" % os.path.relpath(saved, HERE))
     print(RULE)
-    print("The next build starts from this file, on every laptop in the pod.")
+    print("The next build starts from this file, on every laptop on the team.")
     print(RULE)
     return 0
 
@@ -659,13 +730,18 @@ def cmd_take_canon(args):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Keep one repo in sync across a pod.")
+        description="Keep one repo in sync across a team.")
     parser.add_argument("--status", action="store_true",
-                        help="where the pod is, and where you are")
+                        help="where the team is, and where you are")
     parser.add_argument("--push-canon", action="store_true",
-                        help="publish your version as the pod's canon (one person per block)")
+                        help="publish your version as the team's canon (one person per block)")
     parser.add_argument("--take-canon", action="store_true",
-                        help="pick up the pod's canon (everyone else)")
+                        help="pick up the team's canon (everyone else)")
+    parser.add_argument("--history", action="store_true",
+                        help="every canon push so far, with the committer's note on what "
+                             "changed and why (what /catchup reads)")
+    parser.add_argument("--note", default=None,
+                        help="with --push-canon: one line for the team on what changed and why")
     parser.add_argument("--gate", default=None,
                         help="which verify.py step this build is, e.g. 1.4 "
                              "(default: worked out for you)")
@@ -674,21 +750,24 @@ def main():
                              "Skip the heads-up (taking it is no longer refused)")
     args = parser.parse_args()
 
-    verbs = [args.status, args.push_canon, args.take_canon]
+    verbs = [args.status, args.push_canon, args.take_canon, args.history]
     if sum(1 for v in verbs if v) != 1:
-        print("\n%s\nLARKSPUR POD SYNC\n%s" % (RULE, RULE))
+        print("\n%s\nLARKSPUR TEAM SYNC\n%s" % (RULE, RULE))
         return fail("Pick exactly one thing to do.",
-                    "python3 pod_sync.py --status        where the pod is",
+                    "python3 pod_sync.py --status        where the team is",
                     "python3 pod_sync.py --push-canon    you built it, publish it",
-                    "python3 pod_sync.py --take-canon    everyone else, pick it up")
+                    "python3 pod_sync.py --take-canon    everyone else, pick it up",
+                    "python3 pod_sync.py --history       what changed and why, every push")
 
     problem = preflight()
     if problem:
-        print("\n%s\nLARKSPUR POD SYNC\n%s" % (RULE, RULE))
+        print("\n%s\nLARKSPUR TEAM SYNC\n%s" % (RULE, RULE))
         return fail(*problem)
 
     if args.status:
         return cmd_status(args)
+    if args.history:
+        return cmd_history(args)
     if args.push_canon:
         return cmd_push_canon(args)
     return cmd_take_canon(args)

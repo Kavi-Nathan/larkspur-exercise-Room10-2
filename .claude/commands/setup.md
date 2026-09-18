@@ -15,7 +15,7 @@ Then run `python3 setup.py --json` and read the result. Then loop:
    directly: create the venv (`python3 setup.py --fix`), write `.env` from
    `.env.example` (ask them to paste the key, never invent one, never echo it
    back), `git config` identity, a `gh auth login` walkthrough, clone or
-   re-clone the pod repo.
+   re-clone the team repo.
 2. Re-run `python3 setup.py --json`. Repeat until `ready` is true or you hit
    something only a human can do.
 3. Things you must HAND BACK, not do: pasting credentials, creating the GitHub
@@ -29,7 +29,7 @@ Then run `python3 setup.py --json` and read the result. Then loop:
 5. Before ANY re-clone, copy the old `.workshop/` across to the new checkout.
    It holds their banked codes and their bench baselines, none of which exist
    on the remote and none of which can be reconstructed. Re-cloning over the
-   top of it is how a pod loses its before-measurement.
+   top of it is how a team loses its before-measurement.
 6. When it says READY, say so in one line and stop. There is nothing to stamp
    and nothing to push.
 

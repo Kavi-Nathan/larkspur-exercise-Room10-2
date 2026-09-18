@@ -6,7 +6,7 @@
     python3 setup.py --no-live  # skip the live API call (faster re-runs)
 
 It checks one thing: that this laptop can do the build. Python, the SDK, a
-credential that actually works, git, and a real reach to the pod repo. Run it
+credential that actually works, git, and a real reach to the team repo. Run it
 at your own desk, with time to fix what it finds. Everything it names is a 10
 minute fix before the day and a lost build in the room.
 
@@ -167,28 +167,28 @@ def check_env_ignored():
 
 
 def check_origin():
-    """A real reach for the pod repo. This is the check that catches the
+    """A real reach for the team repo. This is the check that catches the
     corporate proxy that allows browsers and blocks git, which otherwise shows
     up as a dead ten minutes in the first build."""
     code, url = _git("remote", "get-url", "origin", timeout=15)
     if code != 0:
-        return Check("origin", False, "git can reach the pod repo",
-                     "This folder has no 'origin', so it is not a clone of the pod repo.\n"
+        return Check("origin", False, "git can reach the team repo",
+                     "This folder has no 'origin', so it is not a clone of the team repo.\n"
                      "     Clone it, do not download the zip:\n"
-                     "       git clone <your pod repo URL>")
+                     "       git clone <your team repo URL>")
     code, out = _git("ls-remote", "--heads", "origin", timeout=30)
     if code == 0:
-        return Check("origin", True, "git can reach the pod repo (%s)" % url)
+        return Check("origin", True, "git can reach the team repo (%s)" % url)
     text = out.lower()
     if "authentication" in text or "could not read username" in text \
             or "permission denied" in text or "403" in text:
-        return Check("origin", False, "git can reach the pod repo",
+        return Check("origin", False, "git can reach the team repo",
                      "git got to the remote and was turned away. If the repo is private, "
                      "whoever\n     created it has to add you as a collaborator, and you have "
                      "to accept the invite.\n"
                      "     That is the usual answer, not your SSH key.\n"
                      "     https auth: `gh auth login`.  SSH: `ssh -T git@github.com`.")
-    return Check("origin", False, "git can reach the pod repo",
+    return Check("origin", False, "git can reach the team repo",
                  "%s\n"
                  "     git could not get to the remote at all. You clone and push on the day, "
                  "so this\n     has to work. In order:\n"

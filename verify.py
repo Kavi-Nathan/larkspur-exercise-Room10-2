@@ -33,7 +33,7 @@ sys.path.insert(0, HERE)
 
 SHARED_SECRET = b"larkspur-basecamp-reference-architecture"
 # Where a banked code goes. The gate mints it on this laptop; the site is where
-# the pod's progress becomes visible to the pod.
+# the team's progress becomes visible to the team.
 BUILD_SITE = "https://anthropicpartnerbasecamp.bts.com/"
 # Everything this file banks lives here, and nowhere else. .workshop/ is
 # per-clone and gitignored: your codes are yours, on your laptop, and nothing
@@ -61,7 +61,7 @@ STEP_IDS = list(STEP_NAMES)
 # "1" is answered with the command to type instead of a check.
 ALIASES = {"2": "1.3", "3": "1.2", "4": "1.4",
            "5": "4.1", "6": "3.1", "7": "2.1"}
-# Steps that end a build block: the pod's readout should be fresh at each.
+# Steps that end a build block: the team's readout should be fresh at each.
 BLOCK_END_STEPS = {"1.4", "2.1", "2.2", "3.1", "4.1"}
 
 # Day 2 conventions, in one place because three files depend on them.
@@ -138,11 +138,13 @@ def slug(name: str) -> str:
 
 
 def read_roster() -> tuple:
-    """(pod name or None, [member names]) from TEAM.md.
+    """(team name or None, [member names]) from TEAM.md.
 
-    TEAM.md is two things: `# Pod: <name>` on the first line, then one `- Name`
-    per person. Whoever created the repo types it once. Display and attribution
-    only, and this never fails: a missing or half-filled file returns empty."""
+    TEAM.md is two things: `# Team: <name>` on the first line, then one `- Name`
+    per person. Whoever created the repo types it once. The older `# Pod:` heading
+    still parses, so a repo made from the old template keeps working. Display and
+    attribution only, and this never fails: a missing or half-filled file returns
+    empty."""
     pod, members = None, []
     path = os.path.join(HERE, "TEAM.md")
     try:
@@ -152,7 +154,7 @@ def read_roster() -> tuple:
         text = ""
     for line in text.splitlines():
         line = line.strip()
-        m = re.match(r"#\s*Pod\s*:\s*(.+)", line, re.I)
+        m = re.match(r"#\s*(?:Pod|Team)\s*:\s*(.+)", line, re.I)
         if m:
             pod = pod or m.group(1).strip()
             continue
@@ -168,7 +170,7 @@ def read_roster() -> tuple:
 
 
 def _placeholder(value: str) -> bool:
-    """`# Pod: <your pod name>` is the shipped template, not a pod."""
+    """`# Team: <your team name>` is the shipped template, not a team."""
     return bool(re.match(r"^<.*>$", value.strip()))
 
 
@@ -543,7 +545,7 @@ def _cost_lane_hint(after: dict) -> str:
 
 
 def step_5(args) -> List[Check]:
-    """Lane-aware. Grades movement on the metric the pod itself declared, and
+    """Lane-aware. Grades movement on the metric the team itself declared, and
     refuses to reward a win that broke stage 1."""
     lane = _declared_lane()
     checks = [Check(lane is not None,
@@ -554,14 +556,14 @@ def step_5(args) -> List[Check]:
                          "the one word you picked: Lever: cost. Build 4 is where you pick "
                          "it, and the gate grades the metric that word names.")]
     # No early return on a missing lever. The bench pair either exists or it
-    # does not, and a pod that measured well and forgot the line should see that
+    # does not, and a team that measured well and forgot the line should see that
     # on the same board as the line they forgot.
 
     before, after = _bench("before"), _bench("after")
     checks.append(Check(before is not None, "a 'before' bench exists",
                         hint="python3 bench.py --label before --stage 1, and it has to be "
                              "BEFORE you tune. There is no way to reconstruct it after. Note "
-                             "that .workshop/ is gitignored, so a podmate's before number "
+                             "that .workshop/ is gitignored, so a teammate's before number "
                              "never arrives with a pull; it has to be benched on this laptop. "
                              "If you have already tuned: git stash, bench --label before, "
                              "git stash pop, bench --label after."))
@@ -701,7 +703,7 @@ def step_6(args) -> List[Check]:
                         "every case says what it expects",
                         hint="A case with no `expect` cannot be judged, only run."))
 
-    # Attribution. A pod of six can ship six cases with one person's judgement
+    # Attribution. A team of six can ship six cases with one person's judgement
     # in all of them, and nothing else in the day would notice.
     me = normalize_name(getattr(args, "name", "") or "")
     authors = sorted({(c.get("author") or "").strip() for c in cases if (c.get("author") or "").strip()})
@@ -730,7 +732,7 @@ def step_6(args) -> List[Check]:
                              % (ran_ids, ids)))
     # Deliberately NOT asserted: that the evals passed. A blocked release with a
     # named hard gate is a legitimate, honest outcome for this block, and gating
-    # on a green run would teach pods to write cases they know they pass.
+    # on a green run would teach teams to write cases they know they pass.
     rep = report.get("report", {})
     ran = rep.get("cases", 0)
     unknown = rep.get("unknown") or 0
@@ -750,7 +752,7 @@ def step_6(args) -> List[Check]:
                              "own week 8."))
 
     # Informational, never blocking. The panel reads .workshop/bench-after.json,
-    # which Build 4 produces, and Build 4 comes after this gate. A pod that has
+    # which Build 4 produces, and Build 4 comes after this gate. A team that has
     # not benched yet is on schedule, not behind.
     bench_after = _bench("after")
     if bench_after is None:
@@ -807,11 +809,11 @@ def step_6(args) -> List[Check]:
 
 
 def _build2_probe() -> tuple:
-    """The pod's own Build 2 probe: (pnr, last_name, message, warning-or-None).
+    """The team's own Build 2 probe: (pnr, last_name, message, warning-or-None).
 
-    One customer message the tools the pod wrote exist to answer, in
+    One customer message the tools the team wrote exist to answer, in
     build2_probe.txt at the repo root (three lines: PNR, last name, message).
-    It lives at the root, not in .workshop/, because it is a pod artifact. One
+    It lives at the root, not in .workshop/, because it is a team artifact. One
     person writes the question and everybody's gate runs it. Writing that
     question IS the spec.
 
@@ -874,7 +876,7 @@ def step_7(args) -> List[Check]:
     if not new_names:
         return checks
 
-    # The pod's own probe, shared with gate 2.2 so the two cannot drift.
+    # The team's own probe, shared with gate 2.2 so the two cannot drift.
     pnr, last, msg, probe_warning = _build2_probe()
     if probe_warning is not None:
         checks.append(probe_warning)
@@ -893,18 +895,18 @@ def step_7(args) -> List[Check]:
                         "the model chose a new tool on a conversation that needs it (%s, "
                         "attempt %d of %d)" % (", ".join(called_new) or "not called",
                                                used, attempts),
-                        hint="Three attempts, none of them reached for any tool the pod wrote. "
+                        hint="Three attempts, none of them reached for any tool the team wrote. "
                              "That is a routing result, not bad luck. Two suspects, in order: "
                              "the descriptions, including the field descriptions inside "
                              "input_schema (an over-constrained argument description is a "
                              "routing failure that looks like judgement), then the probe. "
-                             "Write the one customer message the pod's tools exist to answer "
+                             "Write the one customer message the team's tools exist to answer "
                              "into build2_probe.txt at the repo root (three lines: PNR, last "
                              "name, message)."))
-    # 14 Sep 2026: the pod writes one tool per person now, and this gate can only
+    # 14 Sep 2026: the team writes one tool per person now, and this gate can only
     # prove routing on the one shared probe. Name the tools that went unproven,
     # so a pass is never read as all of them having been chosen.
-    checks.append(note("(the pod wrote %d tool(s): %s. Chosen on this probe: %s. One is all the "
+    checks.append(note("(the team wrote %d tool(s): %s. Chosen on this probe: %s. One is all the "
                        "gate needs. Every other one is unproven until whoever wrote it runs the "
                        "question their own tool exists to answer.)"
                        % (len(new_names), ", ".join(sorted(new_names)),
@@ -1046,7 +1048,7 @@ def step_2_2(args) -> List[Check]:
         if called:
             break
     checks.append(Check(bool(called),
-                        "an MCP-discovered tool fired on the pod's probe (%s, attempt %d "
+                        "an MCP-discovered tool fired on the team's probe (%s, attempt %d "
                         "of %d)" % (", ".join(called) or "not called", _attempt + 1, attempts),
                         hint="Three attempts and it never reached for the tool. That is a "
                              "routing result, not bad luck, and it is the same suspect as at "
@@ -1115,7 +1117,7 @@ def print_board(profile: dict) -> None:
     except Exception:  # noqa: BLE001: a header must never take the board down
         pod, members = None, []
     if pod or members:
-        head = "POD %s" % pod if pod else "POD: no name in TEAM.md yet"
+        head = "TEAM %s" % pod if pod else "TEAM: no name in TEAM.md yet"
         if members:
             head += " · %d member%s" % (len(members), "" if len(members) == 1 else "s")
         print("\n" + head)
@@ -1220,10 +1222,10 @@ def run_step(raw: str, name: Optional[str]) -> int:
     print(BUILD_SITE)
 
     # Non-blocking, and only where a build actually ends: 1.4, 2.1, 2.2, 3.1 and
-    # 4.1 are the steps that finish a build, and each is a moment where the pod's
+    # 4.1 are the steps that finish a build, and each is a moment where the team's
     # one-page readout should not still be describing the previous one.
     if number in BLOCK_END_STEPS and not os.path.exists(os.path.join(HERE, "readout.html")):
-        print("\n  Note: the pod's readout is stale. Whoever is committer this block runs")
+        print("\n  Note: the team's readout is stale. Whoever is committer this block runs")
         print("  python3 readout.py before --push-canon.")
     return 0
 

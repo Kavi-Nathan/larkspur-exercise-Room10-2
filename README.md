@@ -1,4 +1,4 @@
-# Larkspur disruption agent: the pod repo
+# Larkspur disruption agent: the team repo
 
 A disruption-care agent for Larkspur Airlines, built on nine tools that already
 work (`support/tools.py`, running against a frozen copy of real airline data in
@@ -6,19 +6,19 @@ work (`support/tools.py`, running against a frozen copy of real airline data in
 each tool and the loop that drives them.
 
 **Open `guide/index.html` for the steps.** It starts on **Welcome to your
-build**, which is the case study, then the three questions your pod answers out
+build**, which is the case study, then the three questions your team answers out
 loud, then **Get set up**. After that it is the build page by page. What you are
 building, what to do, what it looks like when it worked, and where to look when
 it did not. `guide/Participant-Guide.pdf` is the same thing on paper.
 
 **The same steps run on the build site** at
-<https://anthropicpartnerbasecamp.bts.com/>, which your pod opens together in
+<https://anthropicpartnerbasecamp.bts.com/>, which your team opens together in
 the room. It opens on the welcome too, and the three Start pages sit under the
 first tab. The site adds the build clock at the top of the page and the box
 where you paste the evidence code a gate prints. Nothing uploads either way.
 Pick your surface once on Get set up and it stays picked.
 
-**Nobody in the pod has an assigned job.** You decide in the moment who does
+**Nobody on the team has an assigned job.** You decide in the moment who does
 what. One rule stands. One person pushes the canon at the end of the build and
 everyone else takes it. Agree who before the clock runs out.
 
@@ -27,14 +27,14 @@ everyone else takes it. Agree who before the clock runs out.
 These five run the whole build.
 
 ```bash
-git clone <your pod repo URL>      # once
+git clone <your team repo URL>      # once
 python3 setup.py                   # until it says READY
 python3 run.py K7PQ2M --trace      # every build
 python3 verify.py 1.2              # every gate
 python3 pod_sync.py --take-canon   # at the end of a build
 ```
 
-`setup.py` checks python, the SDK, git, a real reach to the pod repo, and one
+`setup.py` checks python, the SDK, git, a real reach to the team repo, and one
 live call to Claude. Every failure it prints names the fix. Run it at your own
 desk. There is no offline path in this pack, so a credential that does not work
 stops the build.
@@ -46,13 +46,17 @@ there if you would rather not lead with a terminal.
 
 ## One repo, several people
 
-One person in the pod makes this repo from the template the room lead posts in
-chat. **Use this template**, then **Create a new repository**, owner their own
-account, Private. Then **Settings**, **Collaborators**, **Add people** for every
-podmate by GitHub username, plus the room lead's handle, which is in the chat.
-The overnight review needs that handle to reach your repo, and a repo nobody
-shared gets no file back. Then they post the repo URL in the pod thread, and
-nobody else does anything until it is there.
+One person on the team makes this repo from the template at
+<https://github.com/victorsteeb/larkspur-exercise> (the room lead posts the same
+link in chat). **Use this template**, then **Create a new repository**, owner
+their own account, Private. Before the URL goes anywhere: **Settings**,
+**Collaborators**, **Add people** for every teammate by GitHub username, plus the
+room lead's handle, which is in the chat. Nobody can see a private repo they were
+not invited to, so an uninvited room lead cannot review it or help you in it, and
+the overnight review skips it. Then they post the repo URL in the team thread
+with the line `invites sent`, and nobody else does anything until it is there.
+The template itself is never your team's repo: save the URL of the repo you
+created from it.
 
 Everyone else has an invitation email waiting. Accept it before you try to
 clone, because a private repo refuses you until you do. Clone it rather than
@@ -69,13 +73,13 @@ learning to read.
 
 `--take-canon` saves your version to `.workshop/mine/` first and prints the
 path. Nothing you wrote is lost, so `diff` it against the canon. If you are
-behind or something broke, the pod repo is your checkpoint:
+behind or something broke, the team repo is your checkpoint:
 
 ```bash
 python3 pod_sync.py --take-canon --force
 ```
 
-It restores what the pod pushed. Anything gitignored stays gone. Your `.env`
+It restores what the team pushed. Anything gitignored stays gone. Your `.env`
 (re-create it from `.env.example`), `.venv/` (rebuild with
 `python3 setup.py --fix`), and `.workshop/`, which holds your banked codes and
 your bench numbers. Copy `.workshop/` out before you re-clone into a fresh
@@ -89,14 +93,14 @@ re-running `bench.py --label before` against the current agent.
 | `setup.py` | Checks this machine. `--fix` builds the venv and installs. Run it until READY. |
 | `run.py <PNR> --trace` | Runs the agent on one ticket and shows every turn on the wire. `--all` runs the five shapes and writes the totals. |
 | `verify.py <step>` | A gate: `1.2`, `1.3`, `1.4`, `2.1`, `2.2`, `3.1`, `4.1`. Run it with no step and it prints the status board. |
-| `pod_sync.py` | The pod's canon: `--push-canon`, `--take-canon`, `--status`. |
-| `eval_harness.py` | Runs `evals/cases.json`, your pod's own cases, against your agent. |
+| `pod_sync.py` | The team's canon: `--push-canon`, `--take-canon`, `--status`. |
+| `eval_harness.py` | Runs `evals/cases.json`, your team's own cases, against your agent. |
 | `bench.py --label <name>` | Measures a run: latency, tokens, cache, cost per contact. The before/after pair around your lever. |
 | `readout.py` | Writes the one page that says what your agent is and what it just did. The canon push publishes it. |
 
-`TEAM.md` is the pod's name and a typed roster, written once by whoever created
+`TEAM.md` is the team's name and a typed roster, written once by whoever created
 the repo. The review reads the names off it. `PITCH.md` and `evals/cases.json`
-are the pod's shared record, and they are normal commits. The bench pair never
+are the team's shared record, and they are normal commits. The bench pair never
 leaves your laptop.
 
 ## Ground rule

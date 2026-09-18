@@ -8,11 +8,11 @@
 
 Every lane measures with this. The cost lane reads the token and cache columns,
 the speed lane reads p50 and the mean, the intelligence lane reads the wire-rule
-count on stage 2. One tool for all three, so a pod never has to argue about
+count on stage 2. One tool for all three, so a team never has to argue about
 whose numbers are whose.
 
 Results land in .workshop/bench-<label>.json. The gate (verify.py 4.1) reads two
-of those files, so a pod that tunes before it measures has nothing to show.
+of those files, so a team that tunes before it measures has nothing to show.
 
 ON --runs. The default is 1 run per shape, which is five conversations and about
 a minute: enough to see a big move, not enough to defend a small one. At 1 run
@@ -369,7 +369,7 @@ def compare(a_label, b_label) -> int:
     print("  Both runs: stage %s, %s runs per shape."
           % (a.get("stage"), a.get("runs_per_shape")))
     # The default is 1, and at 1 the small rows above are noise. Said here
-    # rather than left for a pod to discover in --help after they have quoted
+    # rather than left for a team to discover in --help after they have quoted
     # an 11% output-token "regression" that was sampling.
     if 1 in (a.get("runs_per_shape"), b.get("runs_per_shape")):
         print("  1 run per shape: output-token deltas under ~15% are noise; "

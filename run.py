@@ -18,7 +18,7 @@ with an error about its own arguments.
 
 Every run also writes the trace to .workshop/last_trace.json, with or without
 --trace, and under --all it is the LAST of the five that survives. That file is
-what `python3 readout.py` turns into the pod's one-page readout, so a run you
+what `python3 readout.py` turns into the team's one-page readout, so a run you
 never made is a readout you cannot render.
 
 --all also writes .workshop/last_run.json: one row per shape plus the
@@ -370,7 +370,7 @@ def main() -> int:
 
     if args.offline:
         print("There is no offline mode in this pack. No network means a raised hand")
-        print("and a podmate's screen. Raise it in the room.")
+        print("and a teammate's screen. Raise it in the room.")
         return 1
 
     if args.show_tools:

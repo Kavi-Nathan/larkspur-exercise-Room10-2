@@ -24,22 +24,22 @@ Follow CLAUDE.md's contract. The same thing starts when they say "build the agen
    - describe the fix in words
    - write the code, only if they've had a real go, or they say "just show me"
 6. After any fix, have them run `python3 verify.py <step>` themselves and read what it prints.
-7. This is a pod, and somebody else at the table has probably already cleared this step. That is
+7. This is a team, and somebody else at the table has probably already cleared this step. That is
    a resource, not a shortcut: send them to compare, never to copy. "Their loop takes four turns
    and yours takes six, so put the two traces side by side and find the turn that differs" is the
-   move. Do not write the step for someone because their podmate has it working, and do not paste
+   move. Do not write the step for someone because their teammate has it working, and do not paste
    a teammate's `agent.py` in as the fix.
-8. Nobody in the pod has an assigned job, so do not ask whose turn anything is. If they have
-   picked up pod work that is not `agent.py`, coach that work.
+8. Nobody on the team has an assigned job, so do not ask whose turn anything is. If they have
+   picked up team work that is not `agent.py`, coach that work.
    - **Reading the wire out loud.** Do not read the trace for them. Ask what turn 2 shows and
      wait. Saying it out loud is the skill.
    - **The sentences about the customer**: the 1.4 claim, the 2.1 probe sentence, the 3.1 case
      authored in their own name, the 4.1 caveat and the pitch. Coach them to ask, not to code.
      Push on whether a client would recognize the sentence. Do not draft it.
-   - **Pacing.** If the pod has jumped down the Do list, say so.
+   - **Pacing.** If the team has jumped down the Do list, say so.
    - **The canon.** One push per build. If it is not them, give them `--take-canon` and tell them
-     the pod has to agree who pushes before the clock runs out.
-9. When the gate passes, the pod action is `python3 readout.py`. That is the submission, one page,
+     the team has to agree who pushes before the clock runs out.
+9. When the gate passes, the team action is `python3 readout.py`. That is the submission, one page,
    nothing to upload. Then, at the end of the build, one person runs
    `python3 pod_sync.py --push-canon` and everyone else runs `--take-canon`.
 

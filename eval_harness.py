@@ -419,7 +419,7 @@ def render(cases, results, report) -> str:
 
 def _shown(path: str) -> str:
     """Relative inside the exercise, as given anywhere else. `--cases` can point
-    at another pod's clone, and eleven `../` are not a helpful error message."""
+    at another team's clone, and eleven `../` are not a helpful error message."""
     rel = os.path.relpath(path, HERE)
     return path if rel.startswith("..") else rel
 
