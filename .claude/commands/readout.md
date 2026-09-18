@@ -14,7 +14,7 @@ Produce the build's readout and hand it off. This is the submission: one page, n
 4. Then the handoff. `readout.html` and `readout-trace.json` are committed by ONE person per
    build, the one the team agreed on, who also publishes the team's canon:
 
-       python3 pod_sync.py --push-canon
+       python3 pod_sync.py --push-canon --note "what changed and why, one line"
 
    Everyone else runs `python3 pod_sync.py --take-canon` and commits nothing.
 5. Nobody has an assigned job and there is no turn order. One person pushes the canon at the

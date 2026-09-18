@@ -49,21 +49,22 @@ there if you would rather not lead with a terminal.
 One person on the team makes this repo from the template at
 <https://github.com/victorsteeb/larkspur-exercise> (the room lead posts the same
 link in chat). **Use this template**, then **Create a new repository**, owner
-their own account, Private. Before the URL goes anywhere: **Settings**,
-**Collaborators**, **Add people** for every teammate by GitHub username, plus the
-room lead's handle, which is in the chat. Nobody can see a private repo they were
-not invited to, so an uninvited room lead cannot review it or help you in it, and
-the overnight review skips it. Then they post the repo URL in the team thread
+their own account, **Public**. Before the URL goes anywhere: **Settings**,
+**Collaborators**, **Add people** for every teammate by GitHub username, plus
+`victorsteeb` and the room lead's handle, which is in the chat. Anyone can read a
+public repo, but only a collaborator can push to it: an uninvited teammate cannot
+publish the canon, and an uninvited reviewer cannot leave the overnight review in
+your repo. Then they post the repo URL in the team thread
 with the line `invites sent`, and nobody else does anything until it is there.
 The template itself is never your team's repo: save the URL of the repo you
 created from it.
 
 Everyone else has an invitation email waiting. Accept it before you try to
-clone, because a private repo refuses you until you do. Clone it rather than
+clone: you can read the repo before accepting, you cannot push to it. Clone it rather than
 downloading a zip. The checks read git history.
 
 **Nobody commits `agent.py` mid-build. One person pushes the canon at the end
-of the build with `python3 pod_sync.py --push-canon`, and everyone else takes
+of the build with `python3 pod_sync.py --push-canon --note "what changed and why"`, and everyone else takes
 it with `python3 pod_sync.py --take-canon`. Agree who before the clock runs
 out.**
 
@@ -93,7 +94,7 @@ re-running `bench.py --label before` against the current agent.
 | `setup.py` | Checks this machine. `--fix` builds the venv and installs. Run it until READY. |
 | `run.py <PNR> --trace` | Runs the agent on one ticket and shows every turn on the wire. `--all` runs the five shapes and writes the totals. |
 | `verify.py <step>` | A gate: `1.2`, `1.3`, `1.4`, `2.1`, `2.2`, `3.1`, `4.1`. Run it with no step and it prints the status board. |
-| `pod_sync.py` | The team's canon: `--push-canon`, `--take-canon`, `--status`. |
+| `pod_sync.py` | The team's canon: `--push-canon --note "..."`, `--take-canon`, `--status`, `--history` (every push with its note). |
 | `eval_harness.py` | Runs `evals/cases.json`, your team's own cases, against your agent. |
 | `bench.py --label <name>` | Measures a run: latency, tokens, cache, cost per contact. The before/after pair around your lever. |
 | `readout.py` | Writes the one page that says what your agent is and what it just did. The canon push publishes it. |

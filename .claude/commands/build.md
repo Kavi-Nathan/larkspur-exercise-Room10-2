@@ -41,7 +41,9 @@ Follow CLAUDE.md's contract. The same thing starts when they say "build the agen
      the team has to agree who pushes before the clock runs out.
 9. When the gate passes, the team action is `python3 readout.py`. That is the submission, one page,
    nothing to upload. Then, at the end of the build, one person runs
-   `python3 pod_sync.py --push-canon` and everyone else runs `--take-canon`.
+   `python3 pod_sync.py --push-canon --note "..."` (one line on what changed and why: the
+   teammate who missed this build reads it tomorrow through `--history`; always pass `--note`,
+   the script cannot ask for it from inside Claude Code) and everyone else runs `--take-canon`.
 
 Stretch is after the gate, never instead of it, and it never overwrites banked evidence.
 

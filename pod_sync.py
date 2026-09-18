@@ -391,6 +391,10 @@ def regenerate_readout():
     return False, last_line((r.stdout + r.stderr).strip())
 
 
+class PushCancelled(Exception):
+    """Ctrl-C at the note prompt: stop, and leave nothing half done."""
+
+
 def canon_note(gate, banked, args):
     """The commit body under a canon push: the step, what is green here, the
     size of the change against the previous canon, and one line from the
@@ -410,12 +414,17 @@ def canon_note(gate, banked, args):
     if not note and sys.stdin.isatty():
         try:
             print("\n  One line for the team on what changed and why "
-                  "(Enter to skip; --note \"...\" next time to skip the prompt):")
+                  "(Enter to skip; Ctrl-C to stop without pushing; --note \"...\" next time):")
             note = input("  > ").strip()
-        except (EOFError, KeyboardInterrupt):
+        except EOFError:
             note = ""
+        except KeyboardInterrupt:
+            raise PushCancelled()
     if note:
         lines.append("Why: %s" % note)
+    else:
+        print("  No note recorded with this canon. Next time add one line for the team:")
+        print("    python3 pod_sync.py --push-canon --note \"what changed and why\"")
     lines.append("Behind? python3 pod_sync.py --take-canon, then in claude: /catchup")
     return "\n".join(lines)
 
@@ -503,7 +512,13 @@ def cmd_push_canon(args):
     # The body is for the teammate who was not here: what changed, and why, in
     # the committer's own words. /catchup reads it back through --history.
     message = "canon: gate %s by %s" % (gate, author)
-    body = canon_note(gate, banked, args)
+    try:
+        body = canon_note(gate, banked, args)
+    except PushCancelled:
+        git("reset", "-q", "--", *present)   # unstage; the files themselves are untouched
+        return fail("Stopped. Nothing was committed or pushed.",
+                    "Your files are exactly as they were. When you are ready:",
+                    "  python3 pod_sync.py --push-canon --note \"what changed and why\"")
     code, out = git("commit", "-m", message, "-m", body, timeout=60)
     if code != 0:
         return fail("git could not make the commit.", last_line(out),
