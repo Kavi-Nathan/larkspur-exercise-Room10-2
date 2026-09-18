@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import hmac
+import unicodedata
 import importlib
 import json
 import os
@@ -128,7 +129,11 @@ class StepFailure(Exception):
 
 
 def normalize_name(name: str) -> str:
-    return re.sub(r"\s+", " ", name.strip()).lower()
+    """Trim, collapse spaces, lowercase, and drop accents. The site folds the
+    same way, so "Céline" mints one code however the accent was typed."""
+    s = unicodedata.normalize("NFKD", name or "")
+    s = "".join(c for c in s if not unicodedata.combining(c))
+    return re.sub(r"\s+", " ", s.strip()).lower()
 
 
 def slug(name: str) -> str:
