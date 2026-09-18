@@ -4,7 +4,7 @@
     python3 demo/serve.py            # then open http://localhost:4390
 
 Two panes. On the left, the chat a customer would see. On the right, the evidence
-a sponsor would ask for: your bench numbers, your eval gates, your guardrail.
+a sponsor would ask for: your bench numbers, your eval gates, your safety check.
 
 Open this FIRST, before you change anything. On a fresh clone the agent behind it
 does not answer yet, and the card that comes back instead is the first thing the
@@ -24,7 +24,7 @@ Endpoints, all stdlib, no dependencies:
     GET  /api/evidence  reads .workshop/ and tells the panel what is true
     POST /api/confirm   {hold_id} -> the customer's own click, and a real token
 
-That last one is the guardrail, live in a browser. hold_seat is reversible so the
+That last one is the safety check, live in a browser. hold_seat is reversible so the
 agent may call it. confirm_rebooking is not, so it needs a token only the
 customer's click can produce, and this endpoint is that click. Try it with a
 made-up token and watch it refuse.
@@ -312,7 +312,7 @@ def evidence() -> dict:
             ("p95_s", "p95 latency", "s", True),
             ("input_per_contact", "Input tokens per contact", "", True),
             ("cache_hit_pct", "Cache hit rate", "%", False),
-            ("resolved_pct", "Shapes resolved", "%", False),
+            ("resolved_pct", "Ticket types resolved", "%", False),
         ):
             a, b = before.get(key), after.get(key)
             if a is None and b is None:
@@ -428,7 +428,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     # -- the customer's own click -------------------------------------------
     def _confirm(self, body):
         # This is the ONLY thing that mints a confirmation token, which is the
-        # whole point of the guardrail.
+        # whole point of the safety check.
         try:
             from support import mock_backend as backend
             from support import tools

@@ -16,7 +16,7 @@ from support import (MODEL, SYSTEM_PROMPT, call_local, execute_tool, mcp_client,
 
 MAX_TOOL_CALLS = 8  # Larkspur's own build capped the loop here; then a human takes over.
 
-TONE_ADDENDUM = ""                       # ✏️ Build 4, step 4.1, intelligence lane
+TONE_ADDENDUM = ""                       # ✏️ Build 4, step 4.1, intelligence goal
 EXTRA_TOOLS: List[Dict[str, Any]] = []   # ✏️ Build 2, step 2.1: schemas for the tools you add
 LOCAL_TOOLS: Dict[str, Any] = {}         # ✏️ Build 2, step 2.1: the functions behind them
 

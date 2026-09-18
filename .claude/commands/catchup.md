@@ -7,7 +7,7 @@ or anything like it.
 There are two kinds of catch-up, and the first thing to do is work out which one this is.
 
 1. Find out where they are and where the team is. Run `python3 verify.py` (the status board)
-   and `python3 pod_sync.py --status`. Say both in one line: "You have 1.2 and 1.3 banked; the
+   and `python3 pod_sync.py --status`. Say both in one line: "You have 1.2 and 1.3 saved; the
    team's canon is at 2.2, pushed by Sam 40 minutes ago." Do not ask them which step they are
    on; read it.
 2. Ask one question: which build is the room on right now? That is the target.
@@ -20,7 +20,7 @@ They still build it. The point is that they arrive at the room's build having wr
 missed steps themselves, in ten minutes instead of forty-five. Coach harder than `/build`
 does; do not hand over the file.
 
-3. Take the missed steps in order, lowest unbanked first. For each one, in this rhythm:
+3. Take the missed steps in order, lowest unsaved first. For each one, in this rhythm:
    - Say the job in one sentence, in plain words: what this step makes the agent do.
    - Point at the `✏️` mark for it in `agent.py` (`grep -n '✏' agent.py`).
    - Ask them to say back what has to happen, in their words. One sentence, then move.
@@ -43,7 +43,7 @@ adding to it.
 
 3. Take the canon: `python3 pod_sync.py --take-canon`. Their own `agent.py` is saved to
    `.workshop/mine/` first and the command prints the path; say that out loud before you run
-   it. If it refuses because the canon is ahead of a gate they never banked, that is expected
+   it. If it refuses because the canon is ahead of a gate they never saved, that is expected
    this morning; re-run with `--force`.
 4. Prove it runs here. `python3 setup.py` until READY (a key that died overnight is the usual
    morning failure), then `python3 run.py K7PQ2M --trace`. Paste the trace verbatim. Ask what
@@ -59,7 +59,7 @@ adding to it.
 7. Check the board for Day 2's prerequisites: `python3 verify.py` with no step. Day 2 needs the
    Day 1 gates green on the canon (they are, or the team could not have shipped) and it does
    NOT need this person's own evidence codes for them. Evidence codes are personal; the canon
-   does not bank the gates they missed, and that is fine. Say so once so nobody goes hunting
+   does not save the gates they missed, and that is fine. Say so once so nobody goes hunting
    for a code they never earned.
 8. Hand over to `/build` for the step the room is on (Build 3 starts at `3.1`), with the single
    next command on its own line.

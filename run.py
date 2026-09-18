@@ -6,7 +6,7 @@
     python3 run.py K7PQ2M --trace -v     # same, with the whole of every tool result
     python3 run.py --show-tools          # step 1.3: what Claude sees about your tools
     python3 run.py --tool-tax            # what those schemas cost on every turn
-    python3 run.py --all --trace         # every Stage 1 shape (step 1.4)
+    python3 run.py --all --trace         # every Stage 1 ticket type (step 1.4)
 
 --trace prints the wire: every API turn, the parameters you sent, the blocks
 that came back, the tools Claude picked, what each tool answered, and what it
@@ -21,7 +21,7 @@ Every run also writes the trace to .workshop/last_trace.json, with or without
 what `python3 readout.py` turns into the team's one-page readout, so a run you
 never made is a readout you cannot render.
 
---all also writes .workshop/last_run.json: one row per shape plus the
+--all also writes .workshop/last_run.json: one row per ticket type plus the
 totals, because "it worked on K7PQ2M" and "it worked on all five" are different
 claims and only the second one is worth putting on a readout.
 """
@@ -183,16 +183,16 @@ def run_all(message: str, trace: bool, verbose: bool = False) -> None:
 
     print("\n" + "=" * 66)
     if totals["shapes"] == totals["attempted"] and not broke:
-        print("ALL FIVE STAGE 1 SHAPES")
+        print("ALL FIVE STAGE 1 TICKET TYPES")
     else:
         # The banner counts what ran. A headline that says five over a table of
         # three is the one claim this footer exists to stop.
-        print("STAGE 1 SHAPES: %d of %d ran%s"
+        print("STAGE 1 TICKET TYPES: %d of %d ran%s"
               % (totals["shapes"], totals["attempted"],
                  ", %d of those broke" % totals["failed"] if broke else ""))
     print("=" * 66)
     print("  %-8s %-30s %5s %5s %9s %9s  %s"
-          % ("pnr", "shape", "turns", "tools", "in", "out", "stop_reason"))
+          % ("pnr", "ticket type", "turns", "tools", "in", "out", "stop_reason"))
     for r in rows:
         if r.get("error"):
             print("  %-8s %-30s %5d %5d %9s %9s  FAILED %s"
@@ -209,7 +209,7 @@ def run_all(message: str, trace: bool, verbose: bool = False) -> None:
               % (t["pnr"], t["shape"][:30], "-", "-", "-", "-"))
     print("  " + "-" * 64)
     print("  %-8s %-30s %5d %5d %9s %9s  %d/%d returned text"
-          % ("TOTAL", "%d shapes" % totals["shapes"], totals["turns"], totals["tool_calls"],
+          % ("TOTAL", "%d ticket types" % totals["shapes"], totals["turns"], totals["tool_calls"],
              "{:,}".format(totals["tokens_in"]), "{:,}".format(totals["tokens_out"]),
              totals["resolved"], totals["attempted"]))
     if totals["cache_read"]:

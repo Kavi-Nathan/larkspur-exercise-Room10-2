@@ -52,10 +52,10 @@ CANON_FILES = ["agent.py", "readout.html", "readout-trace.json", "PITCH.md",
                "evals/cases.json", "build2_probe.txt"]
 
 # The step ids every surface uses: guide, verify.py, decks, hints.
-GATE_NAMES = {"1.2": "Make the loop hold", "1.3": "Make the tools route",
-              "1.4": "All five shapes", "2.1": "Your own tool",
+GATE_NAMES = {"1.2": "Make the loop keep going", "1.3": "Make the tools route",
+              "1.4": "All five ticket types", "2.1": "Your own tool",
               "2.2": "The same tool, over MCP", "3.1": "Build the proof",
-              "4.1": "Pull the lever"}
+              "4.1": "Make the change, measure it"}
 
 
 # ---------------------------------------------------------------------------
@@ -281,15 +281,15 @@ def cmd_status(args):
                  top["author"], top["when"]))
         print_note(top.get("body"))
     else:
-        print("  canon     nothing published yet (no --push-canon has landed)")
+        print("  canon     nothing published yet (nobody has run --push-canon)")
 
     profile = load_profile()
     steps = banked_steps(profile)
     if steps:
         codes = ", ".join("%s:%s" % (s, profile["banked"][s]) for s in steps)
-        print("  banked    step(s) %s on this laptop  [%s]" % (", ".join(steps), codes))
+        print("  saved     step(s) %s on this laptop  [%s]" % (", ".join(steps), codes))
     else:
-        print("  banked    nothing banked on this laptop yet (python3 verify.py <step>)")
+        print("  saved     nothing saved on this laptop yet (python3 verify.py <step>)")
 
     names = sorted(set(c["author"] for c in canon))
     print("  team      %d canon push(es) by %d name(s)" % (len(canon), len(names)))
@@ -334,7 +334,7 @@ def resolve_gate(args, profile, ref, prefer="remote"):
     getting this backwards is how a committer gets refused for a step they
     never claimed to be pushing:
 
-      --push-canon  is publishing what passed HERE, so the highest step banked
+      --push-canon  is publishing what passed HERE, so the highest step saved
                     on this laptop is the right guess (prefer="local").
       --take-canon  is picking up what the team published, so the newest canon
                     on the remote is (prefer="remote").
@@ -344,14 +344,14 @@ def resolve_gate(args, profile, ref, prefer="remote"):
     steps = banked_steps(profile)
     remote_gate = next((g for g in (gate_of(r["subject"]) for r in canon_commits(ref)) if g),
                        None)
-    local = (steps[-1], "the highest step banked on this laptop") if steps else None
+    local = (steps[-1], "the highest step saved on this laptop") if steps else None
     remote = ((remote_gate, "the newest canon on the remote is step %s" % remote_gate)
               if remote_gate else None)
     order = (local, remote) if prefer == "local" else (remote, local)
     for answer in order:
         if answer:
             return answer
-    return None, "nothing banked here and no canon on the remote"
+    return None, "nothing saved here and no canon on the remote"
 
 
 def gate_label(gate):
@@ -400,7 +400,7 @@ def canon_note(gate, banked, args):
     size of the change against the previous canon, and one line from the
     committer on why. Asked for at the prompt when --note was not given and
     someone is at the keyboard; skipped quietly otherwise."""
-    lines = ["Step %s (%s) banked. Green on this laptop: %s."
+    lines = ["Step %s (%s) saved. Green on this laptop: %s."
              % (gate, GATE_NAMES.get(gate, "?"), ", ".join(banked) or gate)]
     stat = git_out("diff", "--cached", "--numstat")
     changed = []
@@ -466,7 +466,7 @@ def cmd_push_canon(args):
                     "Then push. The canon is the version that passed, not the newest one.")
     if gate not in banked:
         return fail("Step %s has not passed on this laptop (%s)." % (gate, why),
-                    "Banked here: %s" % (", ".join(banked) or "nothing"),
+                    "Saved here: %s" % (", ".join(banked) or "nothing"),
                     "The canon is the version that passed, so run the gate first:",
                     "  python3 verify.py %s" % gate,
                     "If you are pushing a different build, name it:",
@@ -661,8 +661,8 @@ def cmd_take_canon(args):
     # the canon more than it needs one person's gate, and refusing here strands
     # whoever ran out of time on a file the next block does not start from.
     if gate is not None and gate not in banked and not args.force:
-        print("\n  Heads up: the canon carries step %s, which you have not banked "
-              "(banked here: %s)." % (gate, ", ".join(banked) or "nothing"))
+        print("\n  Heads up: the canon carries step %s, which you have not saved "
+              "(saved here: %s)." % (gate, ", ".join(banked) or "nothing"))
         print("  Taking it anyway. Your file is saved at %s, and the step you missed is"
               % (os.path.relpath(saved, HERE) if saved else "nowhere: there was none"))
         print("  still worth finishing on your own copy: python3 verify.py %s" % gate)
@@ -709,7 +709,7 @@ def cmd_take_canon(args):
                             "Your agent.py is saved at %s."
                             % (os.path.relpath(saved, HERE) if saved else "(none)"),
                             "Simplest fix, and it costs a minute:",
-                            "  1. copy .workshop/ somewhere safe (your banked codes live there)",
+                            "  1. copy .workshop/ somewhere safe (your saved codes live there)",
                             "  2. re-clone the team repo into a new folder",
                             "  3. copy .workshop/ back in")
 

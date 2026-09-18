@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 """bench.py: measure your agent. GIVEN; you should not need to edit this.
 
-    python3 bench.py --label before --runs 3      # 5 Stage 1 shapes, 3 runs each
+    python3 bench.py --label before --runs 3      # 5 Stage 1 ticket types, 3 runs each
     python3 bench.py --label after --runs 3 --cold   # same, on a cache it pays for
-    python3 bench.py --label after --stage 2      # the harder shapes
+    python3 bench.py --label after --stage 2      # the harder ticket types
     python3 bench.py --compare before after       # what your lever actually did
 
-Every lane measures with this. The cost lane reads the token and cache columns,
-the speed lane reads p50 and the mean, the intelligence lane reads the wire-rule
+Every goal measures with this. The cost goal reads the token and cache columns,
+the speed goal reads p50 and the mean, the intelligence goal reads the wire-rule
 count on stage 2. One tool for all three, so a team never has to argue about
 whose numbers are whose.
 
-Results land in .workshop/bench-<label>.json. The gate (verify.py 4.1) reads two
+Results go in .workshop/bench-<label>.json. The gate (verify.py 4.1) reads two
 of those files, so a team that tunes before it measures has nothing to show.
 
-ON --runs. The default is 1 run per shape, which is five conversations and about
+ON --runs. The default is 1 run per ticket, which is five conversations and about
 a minute: enough to see a big move, not enough to defend a small one. At 1 run
-per shape, output-token deltas under about 15% are sampling noise. Use --runs 3
+per ticket, output-token deltas under about 15% are sampling noise. Use --runs 3
 on both sides before you put a small number in front of a sponsor, and the gate
 requires it. Whatever you pick, pick the same on both sides.
 
@@ -25,7 +25,7 @@ reach nearest-rank p95 IS the single slowest conversation: 5 runs, 15 runs, and
 it stays the maximum until about 40. The maximum of 15 samples is bigger than
 the maximum of 5, so a delta between two maxima is the noisiest number in this
 file. It renders as "slowest of N observed" for exactly that reason, and the
-speed lane is graded on p50.
+speed goal is graded on p50.
 
 ON --cold. Prompt caching writes cost more than fresh input and reads cost much
 less, so a run that reads a cache somebody else already paid to write bills a
@@ -267,7 +267,7 @@ def aggregate(rows, model, stage, runs, cold=False) -> dict:
 
 
 def render(agg, label) -> str:
-    L = ["", "─" * 68, "BENCH  %s   stage %s   %d runs x %d shapes"
+    L = ["", "─" * 68, "BENCH  %s   stage %s   %d runs x %d ticket types"
          % (label, agg["stage"], agg["runs_per_shape"], agg["n"] // (agg["runs_per_shape"] or 1)),
          "─" * 68,
          "  resolved            %d/%d  (%.0f%%)   returned text and the loop closed, not "
@@ -284,7 +284,7 @@ def render(agg, label) -> str:
                     "   (cold sweep)" if agg.get("cold") else ""))
     if _warm(agg):
         L.append("  ! this run read a cache it did not pay to write; re-run with --cold or")
-        L.append("    say warm in the pitch. A cache write is priced above fresh input and")
+        L.append("    say warm in the presentation. A cache write is priced above fresh input and")
         L.append("    every idle gap re-pays it, so a sweep that only reads is a discount")
         L.append("    production does not get.")
     L.append("  model cost/contact  $%.4f   (model only, not loaded)" % agg["model_cost_per_contact"])
@@ -366,13 +366,13 @@ def compare(a_label, b_label) -> int:
                                         "-" if delta < 0 else "+", pct)
         print("  %-26s %12s %12s   %s" % (name, fmt % av, fmt % bv, verdict))
     print("─" * 74)
-    print("  Both runs: stage %s, %s runs per shape."
+    print("  Both runs: stage %s, %s runs per ticket."
           % (a.get("stage"), a.get("runs_per_shape")))
     # The default is 1, and at 1 the small rows above are noise. Said here
     # rather than left for a team to discover in --help after they have quoted
     # an 11% output-token "regression" that was sampling.
     if 1 in (a.get("runs_per_shape"), b.get("runs_per_shape")):
-        print("  1 run per shape: output-token deltas under ~15% are noise; "
+        print("  1 run per ticket: output-token deltas under ~15% are noise; "
               "--runs 3 for a claim.")
     print("  slowest observed is the single slowest conversation on each side, not a "
           "percentile.")
@@ -385,7 +385,7 @@ def compare(a_label, b_label) -> int:
     if a.get("stage") != b.get("stage") or a.get("runs_per_shape") != b.get("runs_per_shape"):
         print("  ! These two runs are not comparable: stage %s/%s, runs %s/%s."
               % (a.get("stage"), b.get("stage"), a.get("runs_per_shape"), b.get("runs_per_shape")))
-        print("    Re-run so both sides used the same shapes the same number of times.")
+        print("    Re-run so both sides used the same ticket types the same number of times.")
     print("")
     return 0
 
@@ -396,7 +396,7 @@ def main() -> int:
     ap.add_argument("--label", help="name this run, e.g. before / after")
     ap.add_argument("--stage", type=int, default=1, choices=(1, 2), help="which task set")
     ap.add_argument("--runs", type=int, default=1,
-                    help="runs per shape (default 1; at 1 run per shape, output-token "
+                    help="runs per ticket (default 1; at 1 run per ticket, output-token "
                          "deltas under ~15%% are noise, so use --runs 3 for a claim, "
                          "which is what the gate requires)")
     ap.add_argument("--cold", action="store_true",
@@ -415,7 +415,7 @@ def main() -> int:
     from support import STAGE1_TASKS, STAGE2_TASKS
     tasks = STAGE1_TASKS if args.stage == 1 else STAGE2_TASKS
 
-    print("\nBenching '%s': stage %d, %d shapes x %d run(s) = %d conversations."
+    print("\nBenching '%s': stage %d, %d ticket types x %d run(s) = %d conversations."
           % (args.label, args.stage, len(tasks), args.runs, len(tasks) * args.runs))
     print("Model: %s\n" % agent.MODEL)
 

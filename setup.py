@@ -110,7 +110,7 @@ def check_sdk():
 
 
 def check_writable():
-    """.workshop/ is where your banked gates and bench numbers live. If it
+    """.workshop/ is where your saved gates and bench numbers live. If it
     cannot be written, verify.py has nowhere to put your receipt."""
     target = os.path.join(HERE, ".workshop")
     try:
@@ -138,7 +138,7 @@ def check_git_identity():
     code_e, email = _git("config", "user.email", timeout=15)
     if code_n != 0 or not name or code_e != 0 or not email:
         return Check("gitid", False, "git identity set",
-                     "Your commits would land as nobody.\n"
+                     "Your commits would show up as nobody.\n"
                      "       git config --global user.name \"Your Name\"\n"
                      "       git config --global user.email \"you@yourfirm.com\"")
     return Check("gitid", True, "git identity: %s <%s>" % (name, email))

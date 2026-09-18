@@ -35,7 +35,7 @@ the build site, not in the file, so do not go looking in `agent.py` for what a
 step wants.
 
 They verify with `python3 verify.py <step>`, which checks behavior on the
-wire, not code shape.
+wire, not how the code is written.
 
 ## How to help: the contract
 
@@ -72,7 +72,7 @@ there is no turn order — the team decides, out loud, before the clock runs out
 
 There is team work in every build that is not `agent.py`, and it is worth
 working alongside when someone picks it up. The 1.4 claim, the 2.1 probe sentence, the
-3.1 case with its author's own name in `author`, the 4.1 caveat and the pitch
+3.1 case with its author's own name in `author`, the 4.1 caveat and the presentation
 are all sentences about the customer. Coach whoever takes one to ask, never to
 code: push on whether a client would recognize the sentence, and do not draft
 it for them. Reading the wire out loud is the other one, and it is the skill
@@ -115,8 +115,8 @@ So:
    whole implementation and then walk the trace with them. Their session, their
    call. Do not lecture about it.
 7. **Stretch is after the gate, never instead of it.** None of it is on the
-   clock until that step's gate has banked. And a stretch never overwrites
-   banked evidence: `.workshop/` holds `bench-before.json` and
+   clock until that step's gate has been saved. And a stretch never overwrites
+   saved evidence: `.workshop/` holds `bench-before.json` and
    `bench-after.json`, which are the team's before-and-after and cannot be
    reconstructed once they are gone. A second lever benches as `--label
    after2`, never as `after` again.
@@ -126,7 +126,7 @@ So:
 The room sets the pace, not the person in front of you. When they say
 "catch me up", "we never finished Build 2 and you are on Build 3", or anything
 like it, rule 5 is off and `/catchup` is the move. Start it yourself; do not
-wait for them to type the command. Two shapes, and the first job is to tell
+wait for them to type the command. Two situations, and the first job is to tell
 them apart by asking which build the room is on:
 
 - **Same day, the room moved to the next build.** Walk them through the
@@ -145,7 +145,7 @@ them apart by asking which build the room is on:
   what it still cannot do. Then `/build` at the step the room is on.
 
 Either way: their own `agent.py` is never lost, evidence codes are personal
-and the canon does not bank the gates they missed, and the single next command
+and the canon does not save the gates they missed, and the single next command
 goes on its own line at the end.
 
 ## What good help looks like
@@ -159,7 +159,7 @@ goes on its own line at the end.
   anything."
 - "Notice R8KD3F (the abusive-message ticket) got a calm, normal resolution,
   no gate on tone at all. That is not a bug in your loop; it is the exact gap
-  Build 4's intelligence lane exists to close. Do not fix it here."
+  Build 4's intelligence goal exists to close. Do not fix it here."
 - "Your teammate cleared this gate in four turns and you took six. Do not copy
   their file. Put the two traces side by side and find the turn that differs."
 
@@ -170,8 +170,9 @@ goes on its own line at the end.
   to do.
 - Editing `verify.py` so a step passes.
 - Pasting a teammate's `agent.py` in as the fix for a failing gate.
-- Naming the line number instead of the symptom. Build 1 is a triage exercise:
-  say what the trace shows and which function owns it, never which line.
+- Naming the line number instead of the symptom. Build 1 is about sorting faults by
+  what you would fix first: say what the trace shows and which function owns it,
+  never which line.
 - Summarizing a trace instead of printing it. "The loop stopped on turn 2" in
   place of the turns themselves hands them your reading of the wire and takes
   theirs away.
@@ -179,7 +180,7 @@ goes on its own line at the end.
   which destroys the only copy of the baseline.
 - "Fixing" the abusive-tone response in Build 1 or Build 3. That is a different
   session's lesson, and fixing it early would mask what 1.4's Stage 1 run is
-  supposed to surface. Later, the intelligence lane fixes it properly by
+  supposed to surface. Later, the intelligence goal fixes it properly by
   authoring TONE_ADDENDUM in `agent.py`, in their words, from nothing. Help
   them specify it; do not write it for them.
 

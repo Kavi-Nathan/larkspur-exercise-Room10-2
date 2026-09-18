@@ -195,7 +195,7 @@
       <div class="cmd">python3 eval_harness.py</div>
     </div>
 
-    <h2>Guardrail</h2>
+    <h2>Safety check</h2>
     <div id="guard"><div class="none">Ask the agent to rebook, then use the Confirm card.</div></div>
 
     <h2>What this pod can say</h2>
@@ -207,7 +207,7 @@
 </div>
 
 <script>
-// Presets are the Stage 1 and Stage 2 shapes, so a demo can show the hard cases
+// Presets are the Stage 1 and Stage 2 ticket types, so a demo can show the hard cases
 // on purpose rather than hoping the room asks for one.
 const PRESETS = [
   ["K7PQ2M","Marchetti","Clean cancellation","My flight was disrupted. What happens next?"],
@@ -224,11 +224,11 @@ const PRESETS = [
 // The seven gates, each with the four-word claim a sponsor hears. This is a
 // copy of CLAIMS_SHORT in readout.py, which carries the full client sentence
 // for each one; change both or neither. Seven unlabelled squares tell a sponsor
-// nothing, and the panel already knows which of these banked.
+// nothing, and the panel already knows which of these saved.
 const GATES = [
   ['1.2', 'Completes the whole conversation'],
   ['1.3', 'Asks the right system'],
-  ['1.4', 'Handles five case shapes'],
+  ['1.4', 'Handles five ticket types'],
   ['2.1', 'Reaches for new capability'],
   ['2.2', 'Capability runs as service'],
   ['3.1', 'Eval cases, authored, run'],
@@ -241,7 +241,7 @@ const GATES = [
 const PITCH_LINES = [
   ['Does', 'What it does'],
   ['Number', 'The number'],
-  ['Guardrail', 'The guardrail'],
+  ['Safety check', 'The safety check'],
   ['Lever', 'The lever we pulled'],
   ['Still broken', 'Still broken'],
 ];
@@ -253,7 +253,7 @@ function pitchValue(text, label) {
   const m = re.exec(text);
   if (!m) return null;
   const v = m[1].trim();
-  // The shipped Lever: line is the menu, not a choice.
+  // The shipped Lever: line is the list of three choices, not a choice.
   if (v.startsWith('<') && v.endsWith('>')) return null;
   return v;
 }
@@ -464,7 +464,7 @@ async function loadEvidence() {
   if (src && src.model_cost_per_contact != null) {
     $('hero-n').textContent = '$' + src.model_cost_per_contact.toFixed(4);
     $('hero-u').textContent = `model cost per resolved contact · ${src.n} conversations, `
-      + `${src.runs_per_shape} run(s) per shape · against $6.90 for a human chat`;
+      + `${src.runs_per_shape} run(s) per ticket · against $6.90 for a human chat`;
   }
 
   if (e.deltas && e.deltas.length) {

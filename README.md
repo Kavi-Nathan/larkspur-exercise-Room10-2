@@ -82,7 +82,7 @@ python3 pod_sync.py --take-canon --force
 
 It restores what the team pushed. Anything gitignored stays gone. Your `.env`
 (re-create it from `.env.example`), `.venv/` (rebuild with
-`python3 setup.py --fix`), and `.workshop/`, which holds your banked codes and
+`python3 setup.py --fix`), and `.workshop/`, which holds your saved codes and
 your bench numbers. Copy `.workshop/` out before you re-clone into a fresh
 folder, and copy it back in after. If it is already gone, say so rather than
 re-running `bench.py --label before` against the current agent.
@@ -92,7 +92,7 @@ re-running `bench.py --label before` against the current agent.
 | Script | What it does |
 |---|---|
 | `setup.py` | Checks this machine. `--fix` builds the venv and installs. Run it until READY. |
-| `run.py <PNR> --trace` | Runs the agent on one ticket and shows every turn on the wire. `--all` runs the five shapes and writes the totals. |
+| `run.py <PNR> --trace` | Runs the agent on one ticket and shows every turn on the wire. `--all` runs the five ticket types and writes the totals. |
 | `verify.py <step>` | A gate: `1.2`, `1.3`, `1.4`, `2.1`, `2.2`, `3.1`, `4.1`. Run it with no step and it prints the status board. |
 | `pod_sync.py` | The team's canon: `--push-canon --note "..."`, `--take-canon`, `--status`, `--history` (every push with its note). |
 | `eval_harness.py` | Runs `evals/cases.json`, your team's own cases, against your agent. |

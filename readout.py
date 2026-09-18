@@ -11,7 +11,7 @@ turns, tokens, stop_reason. `--client` writes readout-client.html from exactly
 the same files, for the person who signs. It carries what the agent does, what
 it is fenced from doing, what is proved and by which gate, what is not measured
 yet, your own `Still broken:` line, and your named account. It invents nothing:
-every sentence on it is either sourced from the code, banked in .workshop/, or
+every sentence on it is either sourced from the code, saved in .workshop/, or
 typed by you into PITCH.md and ACCOUNT.md.
 
 Two halves, one self-contained HTML file, readout.html at the repo root:
@@ -21,21 +21,21 @@ Two halves, one self-contained HTML file, readout.html at the repo root:
   ceiling, the prompt sizes. This is the "what we built" half of your team's
   submission.
 
-  ALL FIVE SHAPES: the totals from your last `run.py --all`, if you have run
-  one: turns, tool calls and tokens per shape, and where a loop ended still
+  ALL FIVE TICKET TYPES: the totals from your last `run.py --all`, if you have
+  run one: turns, tool calls and tokens per ticket type, and where a loop ended still
   asking. This is the "prove it generalizes" half.
 
   THE LOOP: your latest wire trace, drawn as the loop it actually was: each
   API turn, what went up, what came back, which tools fired, and where
   stop_reason finally changed. This is the "prove it ran" half. It is ONE
-  conversation: after a `run.py --all` run it is the last of the five shapes,
+  conversation: after a `run.py --all` run it is the last of the five ticket types,
   and the page says which ticket that was so nobody reads it as the whole set.
 
 Pushing readout.html is the submission. There is nothing to upload. It is also
 the fastest way to explain your agent to another team: one page, no code tour.
 
 It writes readout-trace.json beside it (the trace summary alone) and carries a
-copy of the same numbers (plus whichever gates this laptop has banked) inside
+copy of the same numbers (plus whichever gates this laptop has saved) inside
 the page in a <script id="evidence"> block, so whoever scores it can read a
 cloned repo that never had a .workshop/ folder.
 
@@ -77,12 +77,12 @@ GIVEN_TOOL_COUNT = 9  # the nine shipped schemas; anything past this is yours
 # The claims dictionary
 # ---------------------------------------------------------------------------
 # Gate id -> the one sentence a client hears. This is the only place in the
-# repo where a banked gate becomes client language, and it is deliberately
+# repo where a saved gate becomes client language, and it is deliberately
 # narrow: every sentence is a statement about behavior that the gate actually
 # read on the wire. No accuracy, no dollars, no "reliable", no "production
-# ready". A gate that banked on a BLOCKED release still gets an honest
+# ready". A gate that saved on a BLOCKED release still gets an honest
 # sentence, because "we ran the suite and it blocked" is a stronger claim than
-# a green dashboard.
+# a screen that is all green.
 #
 # If you are tempted to make one of these bigger, read what the gate checks
 # first. The gate is the warrant for the sentence; the sentence cannot outrun
@@ -92,7 +92,7 @@ CLAIMS = {
            "lookups, instead of stopping halfway through and going quiet.",
     "1.3": "The agent works out which of your systems to ask, and in what "
            "order, without being told which one holds the answer.",
-    "1.4": "The same agent handled five different disruption shapes, "
+    "1.4": "The same agent handled five different disruption ticket types, "
            "including the two where the correct outcome is to refuse and "
            "hand to a person.",
     "2.1": "We added a capability your customers ask for every storm day, and "
@@ -113,7 +113,7 @@ CLAIMS = {
 CLAIMS_SHORT = {
     "1.2": "Completes the whole conversation",
     "1.3": "Asks the right system",
-    "1.4": "Handles five case shapes",
+    "1.4": "Handles five ticket types",
     "2.1": "Reaches for new capability",
     "2.2": "Capability runs as service",
     "3.1": "Eval cases, authored, run",
@@ -272,7 +272,7 @@ def read_pod() -> str:
 
 
 def read_last_run() -> dict:
-    """The --all aggregate, or {} if nobody has run all five shapes yet."""
+    """The --all aggregate, or {} if nobody has run all five ticket types yet."""
     try:
         with open(LAST_RUN_PATH) as f:
             payload = json.load(f)
@@ -282,7 +282,7 @@ def read_last_run() -> dict:
 
 
 def read_banked() -> dict:
-    """What this laptop has banked, out of the gitignored profile. The page
+    """What this laptop has saved, out of the gitignored profile. The page
     carries a copy because .workshop/ never travels with a clone. Without it a
     facilitator grading a pushed repo sees a build with no gates at all."""
     try:
@@ -302,7 +302,7 @@ def read_pitch() -> dict:
     markdown as the gates are. Same shape of regex, same reason: people write
     `**Lever:** cost` and `- Still broken: the tone gate`.
     """
-    labels = ["Built", "Does", "Number", "Guardrail", "Next", "Still broken",
+    labels = ["Built", "Does", "Number", "Safety check", "Next", "Still broken",
               "Lever", "Costs", "Wrong", "Runs it", "Left out"]
     out = {}
     try:
@@ -316,7 +316,7 @@ def read_pitch() -> dict:
         match = re.search(pattern, body, re.M | re.I)
         if match:
             value = match.group(1).strip()
-            # The shipped Lever: line is a menu, not a choice. An unfilled line
+            # The shipped Lever: line is the list of three choices, not a choice. An unfilled line
             # is not an answer, and putting one on a client page is worse than
             # leaving the row out.
             if value.startswith("<") and value.endswith(">"):
@@ -390,7 +390,7 @@ def not_measured(evals: dict, bench: dict, banked: dict) -> list:
                      "would be a guess.")
     if "1.4" not in banked:
         items.append("Whether the loop generalizes past one ticket. The "
-                     "five-shape gate has not banked here.")
+                     "five-ticket-type gate has not saved here.")
     return items
 
 
@@ -419,7 +419,7 @@ def _trace_label(trace: dict, last_run: dict) -> str:
     row = _from_sweep(trace, last_run)
     if row is None:
         return "trace shown: one conversation, the last one you ran"
-    return ("trace shown: %s, the last of the %d shapes in the sweep"
+    return ("trace shown: %s, the last of the %d ticket types in the sweep"
             % (row.get("pnr", "?"), len((last_run or {}).get("shapes") or [])))
 
 
@@ -472,11 +472,11 @@ def esc(s) -> str:
 
 def render_all_shapes(out: list, last_run: dict) -> None:
     """The --all totals, above the single trace. One conversation proves the
-    loop runs; five shapes through the same function prove it generalizes, and
+    loop runs; five ticket types through the same function prove it generalizes, and
     that is the half a sponsor asks about."""
     totals = last_run.get("totals") or {}
     rows = last_run.get("shapes") or []
-    out.append("<h2>All five shapes: what it did across the set</h2>")
+    out.append("<h2>All five ticket types: what it did across the set</h2>")
     out.append("<p class='sub'>python3 run.py --all · %s</p>"
                % esc(last_run.get("generated", "")))
     out.append("<div class='strip'>")
@@ -490,7 +490,7 @@ def render_all_shapes(out: list, last_run: dict) -> None:
         out.append("<div class='stat'><b>%s</b><span>%s</span></div>" % (esc(value), esc(label)))
     out.append("</div>")
     if rows:
-        out.append("<table><tr><th>pnr</th><th>shape</th><th>turns</th><th>tools</th>"
+        out.append("<table><tr><th>pnr</th><th>ticket type</th><th>turns</th><th>tools</th>"
                    "<th>in</th><th>out</th><th>stop_reason</th></tr>")
         for r in rows:
             stop = r.get("stop_reason")
@@ -578,7 +578,7 @@ def render(arch: dict, trace: dict, pod: str, trace_path: str, evidence: dict,
     out.append("<h2>The loop: one conversation, turn by turn</h2>")
     sweep_row = _from_sweep(trace, last_run or {})
     if sweep_row is not None:
-        where = ("Trace shown: %s (%s), the last of the %d shapes in the sweep above, "
+        where = ("Trace shown: %s (%s), the last of the %d ticket types in the sweep above, "
                  "not a summary of all five · "
                  % (esc(sweep_row.get("pnr", "?")), esc(sweep_row.get("shape", "")),
                     len((last_run or {}).get("shapes") or [])))
@@ -771,7 +771,7 @@ def render_client(arch: dict, pod: str, evidence: dict, pitch: dict, account: di
     out.append("<h2>What is proved, and by which check</h2>")
     proved = [g for g in GATE_ORDER if g in banked]
     if proved:
-        out.append("<p class='sub'>%d of %d checks banked on this laptop. Each check reads "
+        out.append("<p class='sub'>%d of %d checks saved on this laptop. Each check reads "
                    "what the agent did on the wire, not how it was written, so the sentence "
                    "beside it is the widest claim that check supports.</p>"
                    % (len(proved), len(GATE_ORDER)))
@@ -779,9 +779,9 @@ def render_client(arch: dict, pod: str, evidence: dict, pitch: dict, account: di
             out.append("<div class='gate'><span class='id'>%s</span><span class='txt'>%s"
                        "<span class='short'>%s · evidence %s</span></span></div>"
                        % (esc(gate), esc(CLAIMS[gate]), esc(CLAIMS_SHORT[gate]),
-                          esc(banked.get(gate) or "banked")))
+                          esc(banked.get(gate) or "saved")))
     else:
-        out.append("<p class='warn'>No checks have banked on this laptop, so there is "
+        out.append("<p class='warn'>No checks have been saved on this laptop, so there is "
                    "nothing on this page anybody should treat as proved. Run "
                    "<span class='pill'>python3 verify.py 1.2</span> and regenerate.</p>")
     if evals:
@@ -854,8 +854,8 @@ def render_client(arch: dict, pod: str, evidence: dict, pitch: dict, account: di
 
 def main_client(args) -> int:
     """The client page. It needs no trace: it is a claim page, not a run page,
-    so it renders off the architecture, the banked gates and the team's own
-    words. That is deliberate. A team that has banked nothing gets a page that
+    so it renders off the architecture, the saved gates and the team's own
+    words. That is deliberate. A team that has saved nothing gets a page that
     says so, which is the most useful version of this page they could hold."""
     out_path = args.out or OUT_CLIENT_PATH
     arch = read_architecture()
@@ -876,7 +876,7 @@ def main_client(args) -> int:
     print("wrote %s" % os.path.relpath(out_path, HERE))
     print("  claims on the page: %d of %d gates%s"
           % (len(banked), len(GATE_ORDER),
-             (" (" + ", ".join(banked) + ")") if banked else " (none banked here yet)"))
+             (" (" + ", ".join(banked) + ")") if banked else " (none saved here yet)"))
     for gate in GATE_ORDER:
         if gate in banked:
             print("    %-4s %s" % (gate, CLAIMS_SHORT[gate]))
@@ -948,15 +948,15 @@ def main() -> int:
              "{:,}".format(s.get("tokens", {}).get("output", 0))))
     if last_run:
         t = last_run.get("totals") or {}
-        print("  all five shapes: %s/%s returned text, %s turns, %s tool calls, %s in / %s out"
+        print("  all five ticket types: %s/%s returned text, %s turns, %s tool calls, %s in / %s out"
               % (t.get("resolved", "?"), t.get("shapes", "?"), t.get("turns", "?"),
                  t.get("tool_calls", "?"), "{:,}".format(t.get("tokens_in", 0)),
                  "{:,}".format(t.get("tokens_out", 0))))
     else:
-        print("  all five shapes: not on the page (run python3 run.py --all to add them)")
+        print("  all five ticket types: not on the page (run python3 run.py --all to add them)")
     banked = sorted((evidence.get("banked") or {}).keys())
     print("  embedded evidence: gates %s%s"
-          % (", ".join(banked) or "none banked on this laptop",
+          % (", ".join(banked) or "none saved on this laptop",
              " (%s)" % evidence["name"] if evidence.get("name") else ""))
     if args.open:
         webbrowser.open("file://" + os.path.abspath(args.out))

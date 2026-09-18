@@ -2,7 +2,7 @@
 """verify.py: the gate. Never edit this file. If a check seems wrong, say so
 out loud in the room rather than routing around it.
 
-    python3 verify.py            # status board: what's banked, what isn't
+    python3 verify.py            # status board: what's saved, what isn't
     python3 verify.py 1.2        # check step 1.2 (Build 1)
     python3 verify.py 2.1 --name "Your Name"
 
@@ -49,13 +49,13 @@ BUILD2_TOKENS = os.path.join(HERE, ".workshop", "build2_tokens.json")
 # nothing that typed them breaks, but every surface (guide, decks, hints)
 # speaks the new ids. Evidence codes key on the new ids.
 STEP_NAMES = {
-    "1.2": "Build 1 · Make the loop hold",
+    "1.2": "Build 1 · Make the loop keep going",
     "1.3": "Build 1 · Make the tools route",
-    "1.4": "Build 1 · All five shapes",
+    "1.4": "Build 1 · All five ticket types",
     "2.1": "Build 2 · Your own tool",
     "2.2": "Build 2 · The same tool, over MCP",
     "3.1": "Build 3 · Build the proof",
-    "4.1": "Build 4 · Make it scale",
+    "4.1": "Build 4 · Make the change, measure it",
 }
 STEP_IDS = list(STEP_NAMES)
 # Old id → new id. Setup is not a gate any more: setup.py owns it, so the old
@@ -368,7 +368,7 @@ def step_3(args) -> List[Check]:
 
     return [
         Check(len(tracer.turns) >= 2, "%d API turns (need >= 2)" % len(tracer.turns),
-              hint="One turn means the second one never landed. If it came back as a 400 "
+              hint="One turn means the second one never arrived. If it came back as a 400 "
                    "saying a tool_result carries a tool_use_id with no matching tool_use in "
                    "the previous message, the API is telling you the two halves of that "
                    "exchange no longer match: you answered a request the transcript you sent "
@@ -430,9 +430,9 @@ def step_4(args) -> List[Check]:
         # spinning forever is the whole point of step 1.4.
 
     checks.append(Check(ok_count == len(STAGE1_TASKS),
-                         "%d/%d Stage 1 shapes generalized" % (ok_count, len(STAGE1_TASKS)),
+                         "%d/%d Stage 1 ticket types generalized" % (ok_count, len(STAGE1_TASKS)),
                          hint="A loop that works on K7PQ2M and nowhere else is a loop tuned to "
-                              "one ticket. Fix the shape that failed above and re-run all five: "
+                              "one ticket. Fix the ticket type that failed above and re-run all five: "
                               "python3 run.py --all --trace."))
     checks.append(note(
         "(R8KD3F, the abusive-message ticket, comes back calm and helpful with "
@@ -554,10 +554,10 @@ def step_5(args) -> List[Check]:
     refuses to reward a win that broke stage 1."""
     lane = _declared_lane()
     checks = [Check(lane is not None,
-                    "PITCH.md: the 'Lever:' line names one lane%s"
+                    "PITCH.md: the 'Lever:' line names one goal%s"
                     % (" (%s)" % lane if lane else ""),
                     hint="PITCH.md ships that line as Lever: <cost | speed | intelligence>, "
-                         "which is the menu. Replace the whole thing after the colon with "
+                         "which is the list of three choices. Replace the whole thing after the colon with "
                          "the one word you picked: Lever: cost. Build 4 is where you pick "
                          "it, and the gate grades the metric that word names.")]
     # No early return on a missing lever. The bench pair either exists or it
@@ -588,12 +588,12 @@ def step_5(args) -> List[Check]:
     runs_ok = (before.get("runs_per_shape") == after.get("runs_per_shape")
                and (before.get("runs_per_shape") or 0) >= MIN_RUNS)
     comparable = (before.get("stage") == after.get("stage") and runs_ok and model_ok)
-    checks.append(Check(comparable, "the two runs are comparable (%s runs per shape each)"
+    checks.append(Check(comparable, "the two runs are comparable (%s runs per ticket each)"
                         % before.get("runs_per_shape"),
-                        hint="Same stage and at least %d runs per shape on both sides, and "
-                             "the same model unless your declared lane is intelligence, where "
+                        hint="Same stage and at least %d runs per ticket on both sides, and "
+                             "the same model unless your declared goal is intelligence, where "
                              "the model swap is the lever. Stage %s/%s, runs %s/%s, model "
-                             "%s/%s. One run per shape is noise: bench with --runs 3 on both "
+                             "%s/%s. One run per ticket is noise: bench with --runs 3 on both "
                              "sides. On a cost or speed claim, benching across different "
                              "models measures the swap, not the thing you pulled."
                              % (MIN_RUNS,
@@ -610,11 +610,11 @@ def step_5(args) -> List[Check]:
                       "this against. Re-bench the baseline.")
     elif before_resolved >= 100.0:
         guard_hint = ("Stage 1 resolved 5/5 before your change and %.0f%% after. Whatever you "
-                      "pulled, it broke a shape that used to work. Read bench-after.json's "
+                      "pulled, it broke a ticket type that used to work. Read bench-after.json's "
                       "failures list." % after_resolved)
     else:
         guard_hint = ("Stage 1 was already at %.0f%% BEFORE your change, so this is not a "
-                      "regression: it is a shape that never worked. Fix that first: a lane "
+                      "regression: it is a ticket type that never worked. Fix that first: a goal "
                       "win measured on a broken baseline is not a win."
                       % before_resolved)
     checks.append(Check(after_resolved == 100.0,
@@ -626,7 +626,7 @@ def step_5(args) -> List[Check]:
 
     if lane == "cost":
         ok, msg = _moved(before, after, "model_cost_per_contact", lower_is_better=True)
-        checks.append(Check(ok, "cost lane: %s" % msg,
+        checks.append(Check(ok, "cost goal: %s" % msg,
                             hint=_cost_lane_hint(after)))
         # Not a gate, and it belongs beside the cost number rather than in a
         # footnote: a sweep that read a cache it never wrote is priced on a
@@ -635,14 +635,14 @@ def step_5(args) -> List[Check]:
                                             and not after.get("cache_write")):
             checks.append(note(
                 "(that after-bench read a cache it did not pay to write. Re-bench it "
-                "with --cold, or say warm beside the number in the pitch.)"))
+                "with --cold, or say warm beside the number in the presentation.)"))
     elif lane == "speed":
         # p50, not p95. At 5 or 15 conversations nearest-rank p95 is the single
         # slowest one, and the delta between two maxima is the noisiest number
         # bench.py produces. The slowest observed still renders; it is not what
         # a claim rests on here.
         ok, msg = _moved(before, after, "p50_s", lower_is_better=True)
-        checks.append(Check(ok, "speed lane: %s" % msg,
+        checks.append(Check(ok, "speed goal: %s" % msg,
                             hint="Needs a %.0f%% reduction in p50, measured with --runs 3 "
                                  "on both sides. p50 rather than p95 because at these "
                                  "sample sizes p95 is just the slowest single conversation, "
@@ -655,7 +655,7 @@ def step_5(args) -> List[Check]:
         s2b, s2a = _bench("s2-before"), _bench("s2-after")
         checks.append(Check(s2b is not None and s2a is not None,
                             "stage 2 benched before and after",
-                            hint="The intelligence lane's metric is the wire-rule count, "
+                            hint="The intelligence goal's metric is the wire-rule count, "
                                  "which only exists on stage 2: python3 bench.py "
                                  "--label s2-before --stage 2 --runs 3 (then s2-after)."))
         if s2b and s2a:
@@ -668,7 +668,7 @@ def step_5(args) -> List[Check]:
                 _hard_gate_majority(_bench_rows("s2-after"))
             won = sorted(s for s, holds in now.items() if holds and not was.get(s))
             checks.append(Check(gained >= 1 and bool(won),
-                                "intelligence lane: wire rules %s → %s passed, and a hard "
+                                "intelligence goal: wire rules %s → %s passed, and a hard "
                                 "gate now holds on a majority of its runs (%s)"
                                 % (s2b.get("rules_passed"), s2a.get("rules_passed"),
                                    ", ".join(won) or "none"),
@@ -783,14 +783,14 @@ def step_6(args) -> List[Check]:
     if not UNIT_RE.search(figure):
         missing.append("a unit (dollars, seconds, tokens, a percent)")
     if not DENOM_RE.search(figure):
-        missing.append("a denominator (per what: per contact, per shape, n=)")
+        missing.append("a denominator (per what: per contact, per ticket type, n=)")
     shown = figure if len(figure) <= 56 else figure[:55].rsplit(" ", 1)[0] + " …"
     checks.append(Check(
         not missing,
         "PITCH.md: the 'Number:' line carries a figure, a unit and a denominator%s"
         % (" (%s)" % shown if figure and not missing else ""),
         hint=("The 'Number:' line is %s. It needs %s. A figure on its own is not a "
-              "claim: '$0.0234 per resolved contact, 5 shapes, 3 runs each' is, "
+              "claim: '$0.0234 per resolved contact, 5 ticket types, 3 runs each' is, "
               "because somebody can check every part of it."
               % ("missing" if not number_line else "there but incomplete",
                  " and ".join(missing) or "all three"))))
@@ -799,7 +799,7 @@ def step_6(args) -> List[Check]:
                         "floor is 40)" % len(claim.split()),
                         hint="The template ships at 36 words, so this fails until the six "
                              "lines are answered in your own words. Built, Does, Number, "
-                             "Guardrail, Next, Still broken."))
+                             "Safety check, Next, Still broken."))
     # Sh2, and it is scored, not suggested: a line naming one thing that still
     # does not work. "We did not measure that" is worth more than a number you
     # cannot defend, and this line is where that stops being a slogan.
@@ -876,8 +876,8 @@ def step_7(args) -> List[Check]:
             desc = t.get("description", "")
             checks.append(Check(len(desc) >= 40,
                                 "%s description is >= 40 characters (%d)" % (t["name"], len(desc)),
-                                hint="Same bar as the given nine: when to call it, what it "
-                                     "needs, what comes back."))
+                                hint="Say the same three things the given nine say: when to call "
+                                     "it, what it needs, what comes back."))
     if not new_names:
         return checks
 
@@ -1098,7 +1098,7 @@ def step_2_2(args) -> List[Check]:
                ", ".join(added) or "no new names", how)))
     else:
         checks.append(note(
-            "(no banked schema count from 2.1, so there is nothing to compare against. "
+            "(no saved schema count from 2.1, so there is nothing to compare against. "
             "The schemas on the wire here are %s tokens on every turn, %s.)"
             % ("{:,}".format(schema_after), how)))
     checks.append(note(
@@ -1131,8 +1131,8 @@ def print_board(profile: dict) -> None:
     next_step = None
     for n, label in STEP_NAMES.items():
         code = profile["banked"].get(n)
-        mark = "✓ banked %s" % code if code else "-"
-        flag = "  (loaded, not banked)" if n in profile.get("caught_up", []) else ""
+        mark = "✓ saved %s" % code if code else "-"
+        flag = "  (loaded, not saved)" if n in profile.get("caught_up", []) else ""
         print("  %-4s %-36s %s%s" % (n, label, mark, flag))
         if code is None and next_step is None and n in STEPS:
             next_step = n
@@ -1140,7 +1140,7 @@ def print_board(profile: dict) -> None:
     if next_step:
         print("\nNext: python3 verify.py %s" % next_step)
     else:
-        print("\nEvery gate on this laptop is banked.")
+        print("\nEvery gate on this laptop is saved.")
 
 
 def _resolve_name(profile: dict, name: Optional[str]) -> str:
@@ -1207,7 +1207,7 @@ def run_step(raw: str, name: Optional[str]) -> int:
         return 1
 
     if not name:
-        print("\nAll checks passed, but there is no name to bank them under.")
+        print("\nAll checks passed, but there is no name to save them under.")
         print("Re-run with:  python3 verify.py %s --name \"Your Name\"" % number)
         return 1
     profile["name"] = name
@@ -1218,11 +1218,11 @@ def run_step(raw: str, name: Optional[str]) -> int:
         flagged = set(profile.get("banked_from_checkpoint", []))
         flagged.add(number)
         profile["banked_from_checkpoint"] = sorted(flagged)
-        print("\n  (This ran on code you loaded with --take-canon --force. Banked, and")
+        print("\n  (This ran on code you loaded with --take-canon --force. Saved, and")
         print("   recorded as loaded rather than built. Nobody is scored down for it.)")
     _save_profile(profile)
-    print("\nAll checks passed. Evidence code: %s   (banked for \"%s\")" % (code, name))
-    print("That code is your receipt for step %s. Paste it into the build site to bank "
+    print("\nAll checks passed. Evidence code: %s   (saved for \"%s\")" % (code, name))
+    print("That code is your receipt for step %s. Paste it into the build site to save "
           "it. Nothing to upload." % number)
     print(BUILD_SITE)
 

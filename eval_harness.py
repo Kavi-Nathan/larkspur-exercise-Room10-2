@@ -331,7 +331,7 @@ def grade_case(case, transcript, client) -> dict:
 
 def gate_report(cases, results) -> dict:
     """`cases` is how many RAN, including the ones whose grader could not be
-    read. Those land in `unknown` and are out of `scored`, which is the pass
+    read. Those go in `unknown` and are out of `scored`, which is the pass
     rate's denominator on both sides."""
     suites = {}
     for case, res in zip(cases, results):

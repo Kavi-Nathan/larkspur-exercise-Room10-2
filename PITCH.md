@@ -5,7 +5,7 @@ Six lines and a lever. Your words. The last two are scored.
 Built:
 Does:
 Number:
-Guardrail:
+Safety check:
 Next:
 Still broken:
 Lever: <cost | speed | intelligence>

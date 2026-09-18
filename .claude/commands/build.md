@@ -34,7 +34,7 @@ Follow CLAUDE.md's contract. The same thing starts when they say "build the agen
    - **Reading the wire out loud.** Do not read the trace for them. Ask what turn 2 shows and
      wait. Saying it out loud is the skill.
    - **The sentences about the customer**: the 1.4 claim, the 2.1 probe sentence, the 3.1 case
-     authored in their own name, the 4.1 caveat and the pitch. Coach them to ask, not to code.
+     authored in their own name, the 4.1 caveat and the presentation. Coach them to ask, not to code.
      Push on whether a client would recognize the sentence. Do not draft it.
    - **Pacing.** If the team has jumped down the Do list, say so.
    - **The canon.** One push per build. If it is not them, give them `--take-canon` and tell them
@@ -45,6 +45,6 @@ Follow CLAUDE.md's contract. The same thing starts when they say "build the agen
    teammate who missed this build reads it tomorrow through `--history`; always pass `--note`,
    the script cannot ask for it from inside Claude Code) and everyone else runs `--take-canon`.
 
-Stretch is after the gate, never instead of it, and it never overwrites banked evidence.
+Stretch is after the gate, never instead of it, and it never overwrites saved evidence.
 
 Keep it short. They're on the clock.

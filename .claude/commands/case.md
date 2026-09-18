@@ -4,7 +4,7 @@ write the machinery. A case is theirs because the expectation sentence is theirs
 1. Read `evals/cases.json` (or `evals/cases.example.json` if it does not exist yet) and say in one
    line how many cases are there and how many are hard gates.
 2. Ask, one at a time, and wait for each answer:
-   a. Which customer situation. Offer the five tickets by PNR and shape if they are stuck, but
+   a. Which customer situation. Offer the five tickets by PNR and ticket type if they are stuck, but
       take one of their own if they have it.
    b. The message the customer types. Their words.
    c. The expectation, as one sentence a client would sign: what a good answer does and what it
@@ -15,7 +15,8 @@ write the machinery. A case is theirs because the expectation sentence is theirs
       `python3 run.py --show-tools` and let them pick. That becomes the `rules` grader.
    e. Whether one failure should block the release. That is `hard_gate`.
 3. Write the case into `evals/cases.json` in the same shape as the given ones: `id` (suite prefix
-   and a number), `suite`, `hard_gate`, `shape`, `author` (their name, exactly as they bank gates),
+   and a number), `suite`, `hard_gate`, `shape` (the ticket type), `author` (their name, exactly
+   as they save gates),
    `pnr`, `last_name`, `message`, `expect`, `graders` (rules first, then judge). Show them the JSON
    before you save it and read the expectation back to them.
 4. Run `python3 eval_harness.py --case <id>` and paste the output into your reply as a code block,

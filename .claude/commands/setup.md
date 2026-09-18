@@ -27,7 +27,7 @@ Then run `python3 setup.py --json` and read the result. Then loop:
    `.gitattributes`. If a check itself seems wrong, say so out loud. That is a
    workshop bug worth flagging.
 5. Before ANY re-clone, copy the old `.workshop/` across to the new checkout.
-   It holds their banked codes and their bench baselines, none of which exist
+   It holds their saved codes and their bench baselines, none of which exist
    on the remote and none of which can be reconstructed. Re-cloning over the
    top of it is how a team loses its before-measurement.
 6. When it says READY, say so in one line and stop. There is nothing to stamp
